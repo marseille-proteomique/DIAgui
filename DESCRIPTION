@@ -1,0 +1,46 @@
+Package: DIAgui
+Type: Package
+Title: A shiny app for processing DIAnn output in proteomics
+Version: 0.1.0
+Author: Marc-Antoine GERAULT
+Maintainer: Marc-Antoine GERAULT <marco.gerault@gmail.com>
+Description: This package contains a shiny app to process the report.tsv,
+             the output from DIAnn. It also contains the functions used in the app
+             in order to use them in an extern R pipeline.
+             This package totally depends on iq package and also take code from
+             diann-rpackage from Vadim Demichev.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.2
+Depends:
+    R (>= 4.0.0),
+    dplyr (>= 1.0.0),
+    iq (>= 1.9.0),
+    seqinr (>= 4.2)
+Imports: 
+    shiny,
+    shinydashboard,
+    shinycssloaders,
+    shinyWidgets,
+    shinyFiles,
+    shinyjs,
+    data.table,
+    dplyr,
+    tidyr,
+    purrr,
+    openxlsx,
+    plotly,
+    ggplot2,
+    ggrepel,
+    ggpubr,
+    stringr,
+    Rcpp,
+    RcppEigen,
+    iq,
+    seqinr,
+    DT
+Suggests: limma
+LinkingTo: 
+    Rcpp,
+    RcppEigen
