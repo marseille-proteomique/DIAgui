@@ -131,7 +131,16 @@ ui <- fluidPage(
                                                                              column(3, numericInput("qvgg_prec", "Choose the gene-groupe q-value to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
-                                                                    checkboxInput("protypiconly_prec", "Proteotypic only", TRUE),
+                                                                    fluidRow(column(3, checkboxInput("protypiconly_prec", "Proteotypic only", TRUE)),
+                                                                             column(3, radioButtons("remmodif_prec", "",
+                                                                                                    choices = c("Only keep modification selected" = "keep",
+                                                                                                                "Remove modifications selected" = "rem")
+                                                                                                    )
+                                                                                    ),
+                                                                             column(3, selectInput("modif_prec", "Choose some modifications (if NULL, no filtering)",
+                                                                                                   choices = "",
+                                                                                                   multiple = TRUE))
+                                                                             ),
                                                                     actionButton("go_prec", "Start calculation", class = "btn-success"),
                                                                     tags$hr(),
                                                                     textOutput("info_prec"),
@@ -162,7 +171,15 @@ ui <- fluidPage(
                                                                     fluidRow(column(3, checkboxInput("protypiconly_pep", "Proteotypic only", TRUE)),
                                                                              column(3, selectInput("centercol_pep", "Choose identifier to quantify",
                                                                                                    choices = c("Modified.Sequence", "Stripped.Sequence"),
-                                                                                                   selected = "Stripped.Sequence"))
+                                                                                                   selected = "Stripped.Sequence")),
+                                                                             column(3, radioButtons("remmodif_pep", "",
+                                                                                                    choices = c("Only keep modification selected" = "keep",
+                                                                                                                "Remove modifications selected" = "rem")
+                                                                                                    )
+                                                                                    ),
+                                                                             column(3, selectInput("modif_pep", "Choose some modifications (if NULL, no filtering)",
+                                                                                                   choices = "",
+                                                                                                   multiple = TRUE))
                                                                              ),
                                                                     actionButton("go_pep", "Start calculation", class = "btn-success"),
                                                                     tags$hr(),
@@ -197,8 +214,16 @@ ui <- fluidPage(
                                                                     fluidRow(column(3, checkboxInput("protypiconly_peplfq", "Proteotypic only", TRUE)),
                                                                              column(3, selectInput("centercol_peplfq", "Choose identifier to quantify",
                                                                                                    choices = c("Modified.Sequence", "Stripped.Sequence"),
-                                                                                                   selected = "Modified.Sequence"))
+                                                                                                   selected = "Modified.Sequence")),
+                                                                             column(3, radioButtons("remmodif_peplfq", "",
+                                                                                                    choices = c("Only keep modification selected" = "keep",
+                                                                                                                "Remove modifications selected" = "rem")
+                                                                                                    )
                                                                                     ),
+                                                                             column(3, selectInput("modif_peplfq", "Choose some modifications (if NULL, no filtering)",
+                                                                                                   choices = "",
+                                                                                                   multiple = TRUE))
+                                                                             ),
                                                                     actionButton("go_peplfq", "Start calculation", class = "btn-success"),
                                                                     tags$hr(),
                                                                     textOutput("info_peplfq"),
@@ -265,6 +290,15 @@ ui <- fluidPage(
                                                                                      textOutput("diag_getseq"),
                                                                                      tags$hr(),
                                                                                      ),
+                                                                    fluidRow(column(3, radioButtons("remmodif_pg", "",
+                                                                                                    choices = c("Only keep modification selected" = "keep",
+                                                                                                                "Remove modifications selected" = "rem")
+                                                                                                    )
+                                                                                    ),
+                                                                             column(3, selectInput("modif_pg", "Choose some modifications (if NULL, no filtering)",
+                                                                                                   choices = "",
+                                                                                                   multiple = TRUE))
+                                                                             ),
                                                                     actionButton("go_pg", "Start calculation", class = "btn-success"),
                                                                     tags$hr(),
                                                                     textOutput("info_pg"),
@@ -296,6 +330,15 @@ ui <- fluidPage(
                                                                     fluidRow(column(3, checkboxInput("onlycountall_gg", "Only keep peptides counts all", TRUE)),
                                                                              column(3, checkboxInput("protypiconly_gg", "Proteotypic only", TRUE)),
                                                                              column(3, checkboxInput("Top3_gg", "Get Top3 quantification", TRUE))
+                                                                             ),
+                                                                    fluidRow(column(3, radioButtons("remmodif_gg", "",
+                                                                                                    choices = c("Only keep modification selected" = "keep",
+                                                                                                                "Remove modifications selected" = "rem")
+                                                                                                    )
+                                                                                    ),
+                                                                             column(3, selectInput("modif_gg", "Choose some modifications (if NULL, no filtering)",
+                                                                                                   choices = "",
+                                                                                                   multiple = TRUE))
                                                                              ),
                                                                     actionButton("go_gg", "Start calculation", class = "btn-success"),
                                                                     tags$hr(),
@@ -619,17 +662,36 @@ server <- function(input, output, session){
 
   })
     ### PRECURSORS
+    observe({
+      if(!is.null(Report_data$d)){
+        modif <- Report_data$d$Modified.Sequence
+        modif <- unique(stringr::str_extract(modif, "(?<=\\().+?(?=\\))"))
+        modif <- modif[!is.na(modif)]
+
+        updateSelectInput(session, "modif_prec", choices = modif)
+      }
+    })
     precu_ev <- reactiveValues(
       x = NULL
     )
     precu <- reactive({
       df <- Report_data$d
+      if(!is.null(input$modif_prec)){
+        idx_modif <- stringr::str_which(df$Modified.Sequence, paste(input$modif_prec, collapse = "|"))
+        if(input$remmodif_prec == "rem"){
+          df <- df[-idx_modif,]
+        }
+        else if(input$remmodif_prec == "keep"){
+          df <- df[idx_modif,]
+        }
+      }
       d <- diann_matrix(df,
                         proteotypic.only = input$protypiconly_prec,
                         q = input$qv_prec,
                         protein.q = input$qvprot_prec,
                         pg.q = input$qvpg_prec,
-                        gg.q = input$qvgg_prec)
+                        gg.q = input$qvgg_prec,
+                        method = "max")
     })
 
     observeEvent(input$go_prec, {
@@ -680,18 +742,37 @@ server <- function(input, output, session){
     )
 
     ### PEPTIDE
+    observe({
+      if(!is.null(Report_data$d)){
+        modif <- Report_data$d$Modified.Sequence
+        modif <- unique(stringr::str_extract(modif, "(?<=\\().+?(?=\\))"))
+        modif <- modif[!is.na(modif)]
+
+        updateSelectInput(session, "modif_pep", choices = modif)
+      }
+    })
     pep_ev <- reactiveValues(
       x = NULL
     )
     pep <- reactive({
       df <- Report_data$d
+      if(!is.null(input$modif_pep)){
+        idx_modif <- stringr::str_which(df$Modified.Sequence, paste(input$modif_pep, collapse = "|"))
+        if(input$remmodif_pep == "rem"){
+          df <- df[-idx_modif,]
+        }
+        else if(input$remmodif_pep == "keep"){
+          df <- df[idx_modif,]
+        }
+      }
       d <- diann_matrix(df,
                         id.header = input$centercol_pep,
                         proteotypic.only = input$protypiconly_pep,
                         q = input$qv_pep,
                         protein.q = input$qvprot_pep,
                         pg.q = input$qvpg_pep,
-                        gg.q = input$qvgg_pep)
+                        gg.q = input$qvgg_pep,
+                        method = "max")
     })
     observeEvent(input$go_pep, {
       withCallingHandlers({
@@ -741,11 +822,29 @@ server <- function(input, output, session){
     )
 
     ### PEPTIDE MaxLFQ
+    observe({
+      if(!is.null(Report_data$d)){
+        modif <- Report_data$d$Modified.Sequence
+        modif <- unique(stringr::str_extract(modif, "(?<=\\().+?(?=\\))"))
+        modif <- modif[!is.na(modif)]
+
+        updateSelectInput(session, "modif_peplfq", choices = modif)
+      }
+    })
     peplfq_ev <- reactiveValues(
       x = NULL
     )
     peplfq <- reactive({
       df <- Report_data$d
+      if(!is.null(input$modif_peplfq)){
+        idx_modif <- stringr::str_which(df$Modified.Sequence, paste(input$modif_peplfq, collapse = "|"))
+        if(input$remmodif_peplfq == "rem"){
+          df <- df[-idx_modif,]
+        }
+        else if(input$remmodif_peplfq == "keep"){
+          df <- df[idx_modif,]
+        }
+      }
       if(input$protypiconly_peplfq){
         df <- df[which(df[["Proteotypic"]] != 0), ]
       }
@@ -858,6 +957,15 @@ server <- function(input, output, session){
     )
 
     ### PROTEINS
+    observe({
+      if(!is.null(Report_data$d)){
+        modif <- Report_data$d$Modified.Sequence
+        modif <- unique(stringr::str_extract(modif, "(?<=\\().+?(?=\\))"))
+        modif <- modif[!is.na(modif)]
+
+        updateSelectInput(session, "modif_pg", choices = modif)
+      }
+    })
     fasta <- visu_data <- reactive({
       fts <- NULL
       if(input$fasta_pg){
@@ -883,11 +991,22 @@ server <- function(input, output, session){
         shinyjs::html("diag_getseq", "")
 
       df <- Report_data$d
+      if(!is.null(input$modif_pg)){
+        idx_modif <- stringr::str_which(df$Modified.Sequence, paste(input$modif_pg, collapse = "|"))
+        if(input$remmodif_pg == "rem"){
+          df <- df[-idx_modif,]
+        }
+        else if(input$remmodif_pg == "keep"){
+          df <- df[idx_modif,]
+        }
+      }
+      brut <- df
       if(input$protypiconly_pg){
         df <- df[which(df[["Proteotypic"]] != 0), ]
       }
       df <- df %>% dplyr::filter(Q.Value <= input$qv_pg & PG.Q.Value <= input$qvpg_pg & Protein.Q.Value <= input$qvprot_pg & GG.Q.Value <= input$qvgg_pg)
       n_cond <- length(unique(df$File.Name))
+
       if(input$wLFQ_pg == "diann"){
         d <- diann_maxlfq(df,
                           group.header="Protein.Group",
@@ -967,9 +1086,6 @@ server <- function(input, output, session){
       d <- d[,c((nc+1):ncol(d), 1:nc)]
 
       if(input$iBAQ_pg){
-        if(input$wLFQ_pg == "iq"){
-          d[,5:(n_cond+4)] <- 2**d[,5:(n_cond+4)]
-        }
         if(input$fasta_pg){
           d_seq <- getallseq(pr_id = d$Protein.Group,
                              fasta_file = TRUE,
@@ -980,13 +1096,22 @@ server <- function(input, output, session){
                              spec = input$species_pg)
         }
 
-
-        d <- get_iBAQ(d, proteinDB = d_seq,
+        brut <- diann_matrix(brut, id.header = "Protein.Group",
+                             quantity.header = "Precursor.Quantity",
+                             proteotypic.only = input$protypiconly_pg,
+                             q = input$qv_pg, protein.q = input$qvprot_pg,
+                             pg.q = input$qvpg_pg, gg.q = input$qvgg_pg,
+                             method = "sum")
+        brut$Genes <- NULL
+        brut$Protein.Names <- NULL
+        brut <- get_iBAQ(brut, proteinDB = d_seq,
                       id_name = "Protein.Group",
-                      ecol = 5:(n_cond+4),
+                      ecol = 2:(n_cond+1),
                       peptideLength = input$peplen_pg,
                       proteaseRegExp = DIAgui:::getProtease(input$enzyme_pg),
                       log2_transformed = input$wLFQ_pg == "iq")
+        brut <- brut[,-c(2:(n_cond+1))]
+        d <- dplyr::left_join(d, brut, by = "Protein.Group")
       }
       d},
       message = function(m) {
@@ -1041,11 +1166,29 @@ server <- function(input, output, session){
     )
 
     ### GENES
+    observe({
+      if(!is.null(Report_data$d)){
+        modif <- Report_data$d$Modified.Sequence
+        modif <- unique(stringr::str_extract(modif, "(?<=\\().+?(?=\\))"))
+        modif <- modif[!is.na(modif)]
+
+        updateSelectInput(session, "modif_gg", choices = modif)
+      }
+    })
     gg_ev <- reactiveValues(
       x = NULL
     )
     gg <- reactive({
       df <- Report_data$d
+      if(!is.null(input$modif_gg)){
+        idx_modif <- stringr::str_which(df$Modified.Sequence, paste(input$modif_gg, collapse = "|"))
+        if(input$remmodif_gg == "rem"){
+          df <- df[-idx_modif,]
+        }
+        else if(input$remmodif_gg == "keep"){
+          df <- df[idx_modif,]
+        }
+      }
       d <- diann_matrix(df,
                    id.header="Genes",
                    quantity.header="Genes.MaxLFQ.Unique",
@@ -1055,7 +1198,8 @@ server <- function(input, output, session){
                    pg.q = input$qvpg_gg,
                    gg.q = input$qvgg_gg,
                    get_pep = TRUE, only_pepall = input$onlycountall_gg,
-                   Top3 = input$Top3_gg)
+                   Top3 = input$Top3_gg,
+                   method = "max")
     })
     observeEvent(input$go_gg, {
       withCallingHandlers({
