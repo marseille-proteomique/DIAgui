@@ -13,6 +13,7 @@
 #' @param get_pep logical; get peptide count ?
 #' @param only_pepall logical; should only keep peptide counts all or also peptide counts for each fractions ?
 #' @param Top3 logical; get Top3 absolute quantification
+#' @param method When for one identifier there are several values, take either maximum of these or sum them all.
 #'
 #' @return A dataframe containing the quantities from the id you selected
 #'
@@ -20,7 +21,8 @@
 
 diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Precursor.Normalised",
                           proteotypic.only = FALSE, q = 0.01, protein.q = 1, pg.q = 0.01,
-                          gg.q = 1, get_pep = FALSE, only_pepall = FALSE, margin = -10, Top3 = FALSE){
+                          gg.q = 1, get_pep = FALSE, only_pepall = FALSE, margin = -10, Top3 = FALSE,
+                          method = c("max", "sum")){
   df <- data.table::as.data.table(x)
   if(proteotypic.only){
     df <- df[which(df[["Proteotypic"]] != 0), ]
@@ -42,7 +44,7 @@ diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Prec
                                         ":", df[[id.header]])))
   if (is_duplicated) {
     warning("Multiple quantities per id: the maximum of these will be calculated")
-    out <- pivot_aggregate(df, "File.Name", id.header, quantity.header)
+    out <- pivot_aggregate(df, "File.Name", id.header, quantity.header, method = method)
     out <- tidyr::separate(out, add_info, into = info, sep = " ")
   }
   else {
@@ -141,13 +143,23 @@ diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Prec
 
 ### interns functions from diann-rpackage from vdemichev
 
-pivot_aggregate <- function (df, sample.header, id.header, quantity.header){
+pivot_aggregate <- function (df, sample.header, id.header, quantity.header, method = c("max", "sum")){
   x <- data.table::melt.data.table(df, id.vars = c(sample.header, id.header, "add_info"),
                                    measure.vars = c(quantity.header))
   x$value[which(x$value == 0)] <- NA
-  piv <- x %>% dplyr::group_by(!!dplyr::sym(sample.header), !!dplyr::sym(id.header)) %>%
-    dplyr::summarise("results" = max(value, na.rm = TRUE),
-              "add_info" = add_info[which(value == max(value, na.rm = TRUE))])
+  if(method == "max"){
+    piv <- x %>% dplyr::group_by(!!dplyr::sym(sample.header), !!dplyr::sym(id.header)) %>%
+      dplyr::summarise("results" = max(value, na.rm = TRUE),
+                       "add_info" = add_info[which(value == max(value, na.rm = TRUE))])
+  }
+  else if(method == "sum"){
+    piv <- x %>% dplyr::group_by(!!dplyr::sym(sample.header), !!dplyr::sym(id.header)) %>%
+      dplyr::summarise("results" = sum(value, na.rm = TRUE),
+                       "add_info" = add_info[which(value == sum(value, na.rm = TRUE))])
+  }
+  else{
+    stop("method can only be max or sum")
+  }
   piv <- tidyr::spread(piv, !!dplyr::sym(sample.header), results)
   piv <- piv[order(piv[[id.header]]),]
 
