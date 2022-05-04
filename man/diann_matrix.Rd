@@ -16,7 +16,8 @@ diann_matrix(
   get_pep = FALSE,
   only_pepall = FALSE,
   margin = -10,
-  Top3 = FALSE
+  Top3 = FALSE,
+  method = c("max", "sum")
 )
 }
 \arguments{
@@ -41,6 +42,8 @@ diann_matrix(
 \item{only_pepall}{logical; should only keep peptide counts all or also peptide counts for each fractions ?}
 
 \item{Top3}{logical; get Top3 absolute quantification}
+
+\item{method}{When for one identifier there are several values, take either maximum of these or sum them all.}
 }
 \value{
 A dataframe containing the quantities from the id you selected
