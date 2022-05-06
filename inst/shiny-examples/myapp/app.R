@@ -1039,7 +1039,14 @@ server <- function(input, output, session){
         pc <- pc[,c(ncol(pc), 1:(ncol(pc)-1))]
 
         if(input$Top3_pg){
-          Top3 <- d %>% dplyr::group_by(protein_list) %>%
+          Top3 <- iq::preprocess(df,
+                              intensity_col = "Precursor.Quantity",
+                              primary_id = "Protein.Group",
+                              sample_id  = "File.Name",
+                              secondary_id = "Precursor.Id",
+                              median_normalization = FALSE,
+                              pdf_out = NULL)
+          Top3 <- Top3 %>% dplyr::group_by(protein_list) %>%
             tidyr::spread(sample_list, quant)
           Top3$id <- NULL
           top3_f <- function(x){
