@@ -54,28 +54,28 @@ diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Prec
   dft$add_info <- NULL
   if(Top3 & id.header == "Genes"){
     x <- unique(dft[which(dft[["Genes"]] != ""), c("File.Name",
-                                                   "Genes", "Precursor.Id", "Precursor.Normalised"), with = FALSE])
+                                                   "Genes", "Precursor.Id", "Precursor.Quantity"), with = FALSE])
     x[["File.Name"]] <- as.character(x[["File.Name"]])
     x[["Genes"]] <- as.character(x[["Genes"]])
     x[["Precursor.Id"]] <- as.character(x[["Precursor.Id"]])
-    x[["Precursor.Normalised"]] <- as.numeric(x[["Precursor.Normalised"]])
-    if (any(x[["Precursor.Normalised"]] < 0, na.rm = T))
+    x[["Precursor.Quantity"]] <- as.numeric(x[["Precursor.Quantity"]])
+    if (any(x[["Precursor.Quantity"]] < 0, na.rm = T))
       stop("Only non-negative quantities accepted")
     is_duplicated = any(duplicated(paste0(x[["File.Name"]],
                                           ":", x[["Genes"]], ":", x[["Precursor.Id"]])))
     if (is_duplicated)
       warning("Multiple quantities per id: the maximum of these will be calculated")
-    x[["Precursor.Normalised"]][which(x[["Precursor.Normalised"]] == 0)] <- NA
-    x[["Precursor.Normalised"]] <- log(x[["Precursor.Normalised"]])
-    x[["Precursor.Normalised"]][which(x[["Precursor.Normalised"]] <= margin)] <- NA
-    x <- x[!is.na(x[["Precursor.Normalised"]]), ]
+    x[["Precursor.Quantity"]][which(x[["Precursor.Quantity"]] == 0)] <- NA
+    x[["Precursor.Quantity"]] <- log(x[["Precursor.Quantity"]])
+    x[["Precursor.Quantity"]][which(x[["Precursor.Quantity"]] <= margin)] <- NA
+    x <- x[!is.na(x[["Precursor.Quantity"]]), ]
     genes <- unique(x[["Genes"]])
     samples <- unique(x[["File.Name"]])
     top3_res <- list()
     for(i in genes){
       top3 <- x[which(x[["Genes"]] == i),]
       top3[["Genes"]] <- NULL
-      top3 <- tidyr::spread(top3, File.Name, Precursor.Normalised)
+      top3 <- tidyr::spread(top3, File.Name, Precursor.Quantity)
       top3[["Precursor.Id"]] <- NULL
       top3_res[[i]] <- top3
     }

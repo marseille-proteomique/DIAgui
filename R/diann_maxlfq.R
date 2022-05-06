@@ -24,6 +24,11 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
   df <- data.table::as.data.table(x)
   df <- unique(df[which(df[[group.header]] != ""), c(sample.header,
                                                      group.header, id.header, quantity.header), with = FALSE])
+  if(Top3){
+    tp3 <- x[, c(id.header, "Precursor.Quantity")]
+    df <- dplyr::left_join(df, tp3, by = id.header)
+    df[["Precursor.Quantity"]] <- as.numeric(df[["Precursor.Quantity"]])
+  }
   df[[sample.header]] <- as.character(df[[sample.header]])
   df[[group.header]] <- as.character(df[[group.header]])
   df[[id.header]] <- as.character(df[[id.header]])
@@ -46,6 +51,9 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
   df[[quantity.header]] <- log(df[[quantity.header]])
   df[[quantity.header]][which(df[[quantity.header]] <= margin)] <- NA
   df <- df[!is.na(df[[quantity.header]]), ]
+  if(Top3){
+    df[["Precursor.Quantity"]] <- log(df[["Precursor.Quantity"]])
+  }
   proteins <- unique(df[[group.header]])
   m <- length(proteins)
   samples <- unique(df[[sample.header]])
@@ -56,19 +64,34 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
   nbPep <- list()
   all_iden <- list()
   all_piv <- list()
+  if(Top3){
+    all_iden_brut <- list()
+    all_piv_brut <- list()
+  }
   for (i in 1:length(proteins)) {
     if (is_duplicated) {
       piv <- cast_aggregate(df[which(df[[group.header]] ==
                                        proteins[i]), ], sample.header, id.header, quantity.header)
+      if(Top3){
+        piv_brut <- cast_aggregate(df[which(df[[group.header]] ==
+                                              proteins[i]), ], sample.header, id.header, "Precursor.Quantity")
+      }
     }
     else {
       piv <- cast(df[which(df[[group.header]] == proteins[i]),
       ], sample.header, id.header, quantity.header)
+      if(Top3){
+        piv_brut <- cast(df[which(df[[group.header]] == proteins[i]),
+        ], sample.header, id.header, "Precursor.Quantity")
+      }
     }
     if (nrow(piv) == 1 | ncol(piv) == 1) {
       res <- col_max(as.vector(piv), nrow(piv), ncol(piv))
       all_piv[[proteins[i]]] <- piv
       nbPep[[proteins[i]]] <- nrow(piv)
+      if(Top3){
+        all_piv_brut[[proteins[i]]] <- piv_brut
+      }
     }
     else {
       piv[is.na(piv)] <- -1e+06
@@ -77,6 +100,13 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
       identified <- piv[, columns]
       nbPep[[proteins[i]]] <- nrow(identified)
       all_iden[[proteins[i]]] <- identified
+      if(Top3){
+        piv_brut[is.na(piv_brut)] <- -1e+06
+        ref_brut = col_max(as.vector(piv_brut), nrow(piv_brut), ncol(piv_brut))
+        columns_brut <- which(ref_brut > margin)
+        identified_brut <- piv_brut[, columns_brut]
+        all_iden_brut[[proteins[i]]] <- identified_brut
+      }
       if (ncol(identified) >= 2) {
         res <- maxlfq_solve(as.vector(identified), nrow(identified),
                             ncol(identified), margin * 1.001)
@@ -92,12 +122,12 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
   result <- result[order(rownames(result)),]
 
   if(Top3){
-    all_iden <- lapply(all_iden, function(x){
+    all_iden_brut <- lapply(all_iden_brut, function(x){
       x[which(x <= margin)] <- NA;
       x
     })
 
-    top3_iden <- lapply(all_iden, function(x){
+    top3_iden <- lapply(all_iden_brut, function(x){
       x <- apply(x, 2, function(y){
         if(sum(!is.na(y)) < 3){
           y <- NA
@@ -121,7 +151,7 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
     top3_iden <- Reduce(rbind, top3_iden)
     rownames(top3_iden) <- p
 
-    top3_piv <- lapply(all_piv, function(x){
+    top3_piv <- lapply(all_piv_brut, function(x){
       x <- apply(x, 2, function(y){
         y <- NA;
         y
@@ -153,12 +183,10 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
     result$peptide_counts_all <- nbPep
 
     if(!only_countsall){
-      if(!Top3){# avoid doing it twice if Top3 is calculated
-        all_iden <- lapply(all_iden, function(x){
+      all_iden <- lapply(all_iden, function(x){
           x[which(x <= margin)] <- NA;
           x
         })
-      }
       all_iden <- lapply(all_iden, function(x){
         apply(x, 2, function(k){
           sum(!is.na(k))
