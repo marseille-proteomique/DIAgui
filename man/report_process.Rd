@@ -15,8 +15,14 @@ report_process(
   pg.qv = 0.01,
   p.qv = 1,
   gg.qv = 1,
+  only_proteotypic = TRUE,
   get_pep = TRUE,
   only_pepall = FALSE,
+  get_Top3 = FALSE,
+  get_iBAQ = FALSE,
+  fasta = NULL,
+  species = NULL,
+  peptide_length = c(5, 36),
   format = c("xlsx", "csv", "txt")
 )
 }
@@ -41,9 +47,24 @@ report_process(
 
 \item{gg.qv}{Gene group q-value threshold}
 
+\item{only_proteotypic}{If TRUE, will only keep proteotypic}
+
 \item{get_pep}{logical; get peptide count ?}
 
 \item{only_pepall}{logical; should only keep peptide counts all or also peptide counts for each fractions ?}
+
+\item{get_Top3}{If TRUE, will calculate Top3 quantification
+(only use when \code{header.id} is set to 'Protein.group' or 'Genes)}
+
+\item{get_iBAQ}{If TRUE, will calculate iBAQ quantification
+(only use when \code{header.id} is set to 'Protein.group' )}
+
+\item{fasta}{When iBAQ is set to TRUE, you can add path to fasta files.
+If NULL, will get theoretical peptides from swissprot bank (quite long).}
+
+\item{species}{When fasta is NULL, you need to specify the specie from your data}
+
+\item{peptide_length}{The minimum and maximum peptide length}
 
 \item{format}{Format from your saved file (only xlsx, csv and txt are supported)}
 }
