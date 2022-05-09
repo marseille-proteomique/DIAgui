@@ -1,7 +1,7 @@
 Package: DIAgui
+Version: 1.2.1.9000
 Type: Package
 Title: A shiny app for processing DIAnn output in proteomics
-Version: 0.1.0
 Author: Marc-Antoine GERAULT
 Maintainer: Marc-Antoine GERAULT <marco.gerault@gmail.com>
 Description: This package contains a shiny app to process the report.tsv,

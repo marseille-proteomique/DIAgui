@@ -15,23 +15,23 @@ library(iq)
 #increase the max request size for uploading files
 options(shiny.maxRequestSize = 5000*1024^2)
 #set options for the spinner when things are loading
-options(spinner.color = "#1CAA5E", spinner.color.background = "000000", spinner.size = 2)
+options(spinner.color = "#3D7AEC", spinner.color.background = "000000", spinner.size = 2)
 
 ui <- fluidPage(
   useShinydashboard(), #allow to use box without dashboard
 
-  tags$head(tags$style(HTML(".navbar-default {background-color: #1CAA5E !important; color = #ffffff}
+  tags$head(tags$style(HTML(".navbar-default {background-color: #3D7AEC !important; color = #ffffff}
                              .navbar-default > .container-fluid > .navbar-nav > li > a {color: #ffffff; font-size: 18px}
-                             .navbar-default > .container-fluid > .navbar-nav > li > a:hover {background-color: #1CAA39; color: #ffffff}
-                             .navbar-default > .container-fluid > .navbar-nav > li[class=active] > a {background-color: #30D14F; color: #ffffff}
-                             .navbar-default > .container-fluid > .navbar-nav > li[class=active] > a:hover {background-color: #30D14F; color: #ffffff}
+                             .navbar-default > .container-fluid > .navbar-nav > li > a:hover {background-color: #165CDE; color: #ffffff}
+                             .navbar-default > .container-fluid > .navbar-nav > li[class=active] > a {background-color: #003EFF; color: #ffffff}
+                             .navbar-default > .container-fluid > .navbar-nav > li[class=active] > a:hover {background-color: #003EFF; color: #ffffff}
                              .navbar-default > .container-fluid > .navbar-header > .navbar-brand {color: #ffffff; font-size: 22px}
                              * {font-family: 'Rockwell'}
-                             body {background-color: #C8FFC8}
-                             .nav-tabs > li > a {background-color: #1CAA5E; color: #ffffff}
-                             .nav-tabs > li > a:hover {background-color: #1CAA39; color: #ffffff}
-                             .nav-tabs > li[class=active] > a {background-color: #30D14F; color: #ffffff}
-                             .nav-tabs > li[class=active] > a:hover {background-color: #30D14F; color: #ffffff}
+                             body {background-color: #C0CEFF}
+                             .nav-tabs > li > a {background-color: #3D7AEC; color: #ffffff}
+                             .nav-tabs > li > a:hover {background-color: #165CDE; color: #ffffff}
+                             .nav-tabs > li[class=active] > a {background-color: #003EFF; color: #ffffff}
+                             .nav-tabs > li[class=active] > a:hover {background-color: #003EFF; color: #ffffff}
                              .datatables {background-color: #ffffff")
                        )
             ),
@@ -74,10 +74,10 @@ ui <- fluidPage(
                  tabsetPanel(type = "tabs", id = "tab1",
                              tabPanel("Import your data",
                                       tags$hr(),
-                                      fluidRow(box(title = "DIA data", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+                                      fluidRow(box(title = "DIA data", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                    fluidRow(column(6, shinyFilesButton("rep_tsv", label = "Select your report file", title = "Please select a file",
                                                                                        icon = icon("file"),
-                                                                                       multiple = TRUE, viewtype = "detail", buttonType = "success", class = "btn-lg"))
+                                                                                       multiple = TRUE, viewtype = "detail", buttonType = "primary", class = "btn-lg"))
                                                             ),
                                                    tags$hr(),
                                                    conditionalPanel(condition = "output.reportdata_up",
@@ -104,7 +104,7 @@ ui <- fluidPage(
                                                                                                                      )
                                                                                                      )
                                                                                               ),
-                                                                             column(4, actionButton("change_dat", "Rename your fraction", class = "btn-success"))
+                                                                             column(4, actionButton("change_dat", "Rename your fraction", class = "btn-primary"))
                                                                              )
                                                                     ),
                                                    tags$hr()
@@ -118,7 +118,7 @@ ui <- fluidPage(
                                                        ),
                                       conditionalPanel(condition = "output.reportdata_up",
                                                        tags$hr(),
-                                                       fluidRow(box(title = "Precursors", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+                                                       fluidRow(box(title = "Precursors", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                     tags$u(h3("Get your precursor file")),
                                                                     tags$hr(),
 
@@ -141,7 +141,7 @@ ui <- fluidPage(
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
-                                                                    actionButton("go_prec", "Start calculation", class = "btn-success"),
+                                                                    actionButton("go_prec", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
                                                                     textOutput("info_prec"),
                                                                     conditionalPanel(condition = "output.precursor_up",
@@ -155,7 +155,7 @@ ui <- fluidPage(
                                                                                      )
                                                                     )
                                                                 ),
-                                                       fluidRow(box(title = "Peptides", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+                                                       fluidRow(box(title = "Peptides", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                     tags$u(h3("Get your peptide file")),
                                                                     tags$hr(),
 
@@ -181,7 +181,7 @@ ui <- fluidPage(
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
-                                                                    actionButton("go_pep", "Start calculation", class = "btn-success"),
+                                                                    actionButton("go_pep", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
                                                                     textOutput("info_pep"),
                                                                     conditionalPanel(condition = "output.peptide_up",
@@ -224,7 +224,7 @@ ui <- fluidPage(
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
-                                                                    actionButton("go_peplfq", "Start calculation", class = "btn-success"),
+                                                                    actionButton("go_peplfq", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
                                                                     textOutput("info_peplfq"),
                                                                     conditionalPanel(condition = "output.peptideLFQ_up",
@@ -246,7 +246,7 @@ ui <- fluidPage(
                                                        ),
                                       conditionalPanel(condition = "output.reportdata_up",
                                                        tags$hr(),
-                                                       fluidRow(box(title = "Protein group", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+                                                       fluidRow(box(title = "Protein group", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                     tags$u(h3("Get your protein group file (will use the MaxLFQ algorithm)")),
                                                                     tags$hr(),
 
@@ -290,16 +290,11 @@ ui <- fluidPage(
                                                                                      textOutput("diag_getseq"),
                                                                                      tags$hr(),
                                                                                      ),
-                                                                    fluidRow(column(3, radioButtons("remmodif_pg", "",
-                                                                                                    choices = c("Only keep modification selected" = "keep",
-                                                                                                                "Remove modifications selected" = "rem")
-                                                                                                    )
-                                                                                    ),
-                                                                             column(3, selectInput("modif_pg", "Choose some modifications (if NULL, no filtering)",
+                                                                    fluidRow(column(3, selectInput("modif_pg", "Choose some modifications to remove (if none selected, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
-                                                                    actionButton("go_pg", "Start calculation", class = "btn-success"),
+                                                                    actionButton("go_pg", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
                                                                     textOutput("info_pg"),
                                                                     conditionalPanel(condition = "output.proteins_up",
@@ -314,7 +309,7 @@ ui <- fluidPage(
                                                                     ),
                                                                 shinyjs::useShinyjs()
                                                                 ),
-                                                       fluidRow(box(title = "Unique genes", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+                                                       fluidRow(box(title = "Unique genes", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                     tags$u(h3("Get your unique genes file")),
                                                                     tags$hr(),
 
@@ -331,16 +326,11 @@ ui <- fluidPage(
                                                                              column(3, checkboxInput("protypiconly_gg", "Proteotypic only", TRUE)),
                                                                              column(3, checkboxInput("Top3_gg", "Get Top3 quantification", TRUE))
                                                                              ),
-                                                                    fluidRow(column(3, radioButtons("remmodif_gg", "",
-                                                                                                    choices = c("Only keep modification selected" = "keep",
-                                                                                                                "Remove modifications selected" = "rem")
-                                                                                                    )
-                                                                                    ),
-                                                                             column(3, selectInput("modif_gg", "Choose some modifications (if NULL, no filtering)",
+                                                                    fluidRow(column(3, selectInput("modif_gg", "Choose some modifications to remove (if none selected, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
-                                                                    actionButton("go_gg", "Start calculation", class = "btn-success"),
+                                                                    actionButton("go_gg", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
                                                                     textOutput("info_gg"),
                                                                     conditionalPanel(condition = "output.genes_up",
@@ -361,7 +351,7 @@ ui <- fluidPage(
                                       tabsetPanel(type = "tabs",
                                                   tabPanel("Check results",
                                                            tags$hr(),
-                                                            fluidRow(box(title = "Data choice", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+                                                            fluidRow(box(title = "Data choice", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                          conditionalPanel(condition = "output.reportdata_up",
                                                                                           radioButtons("choice_visu", "",
                                                                                                        choices = c("Visualize imported data" = "base",
@@ -386,7 +376,7 @@ ui <- fluidPage(
                                                                      ),
 
                                                             conditionalPanel(condition = "output.visudata_up",
-                                                                             fluidRow(box(title = "Visualiation", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+                                                                             fluidRow(box(title = "Visualiation", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                                           tabsetPanel(type = "tabs",
                                                                                                       tabPanel("Heatmap",
                                                                                                                tags$hr(),
@@ -402,7 +392,7 @@ ui <- fluidPage(
                                                                                                                                          column(3, textInput("nmid_visu", "Type the name of the column that conatain
                                                                                                                                         the IDs"))
                                                                                                                                          ),
-                                                                                                                        column(3, actionButton("seeheat_visu", "See heatmap", class = "btn-success"))
+                                                                                                                        column(3, actionButton("seeheat_visu", "See heatmap", class = "btn-primary"))
                                                                                                                         ),
                                                                                                                tags$hr(),
                                                                                                                withSpinner(plotlyOutput("heat_visu", height = "800px"), type = 6)
@@ -414,7 +404,7 @@ ui <- fluidPage(
                                                                                                                                                           "None" = "none"), selected = "none")),
                                                                                                                         column(3, checkboxInput("area_visu", "Print area of the density curves", TRUE)),
                                                                                                                         column(3, textInput("titD_visu", "Choose a title for your plot (can be NULL)")),
-                                                                                                                        column(3, actionButton("seedens_visu", "See density plot", class = "btn-success"))
+                                                                                                                        column(3, actionButton("seedens_visu", "See density plot", class = "btn-primary"))
                                                                                                                ),
                                                                                                                tags$hr(),
                                                                                                                withSpinner(plotOutput("dens_visu", height = "800px"), type = 6),
@@ -426,7 +416,7 @@ ui <- fluidPage(
                                                                                                                                               choices = c("Log2" = "log2",
                                                                                                                                                           "None" = "none"), selected = "none")),
                                                                                                                         column(4, textInput("titM_visu", "Choose a title for your plot (can be NULL)")),
-                                                                                                                        column(4, actionButton("seemds_visu", "See MDS plot", class = "btn-success"))
+                                                                                                                        column(4, actionButton("seemds_visu", "See MDS plot", class = "btn-primary"))
                                                                                                                ),
                                                                                                                tags$hr(),
                                                                                                                withSpinner(plotOutput("mds_visu", height = "800px"), type = 6),
@@ -435,7 +425,7 @@ ui <- fluidPage(
                                                                                                       tabPanel("Retention time",
                                                                                                                conditionalPanel(condition = "input.choice_visu == 'base'",
                                                                                                                                 tags$hr(),
-                                                                                                                                fluidRow(column(4, actionButton("seert_visu", "See RT vs iRT", class = "btn-success"))
+                                                                                                                                fluidRow(column(4, actionButton("seert_visu", "See RT vs iRT", class = "btn-primary"))
                                                                                                                                          ),
                                                                                                                                 tags$hr(),
                                                                                                                                 withSpinner(plotlyOutput("rt1_visu", height = "800px"), type = 6),
@@ -448,7 +438,7 @@ ui <- fluidPage(
                                                                                                       tabPanel("Proteotypic",
                                                                                                                conditionalPanel(condition = "input.choice_visu == 'base'",
                                                                                                                                 tags$hr(),
-                                                                                                                                fluidRow(column(4, actionButton("seeptyp_visu", "See proteotypic proportion", class = "btn-success"))
+                                                                                                                                fluidRow(column(4, actionButton("seeptyp_visu", "See proteotypic proportion", class = "btn-primary"))
                                                                                                                                 ),
                                                                                                                                 tags$hr(),
                                                                                                                                 withSpinner(plotOutput("ptyp1_visu", height = "600px"), type = 6),
@@ -465,10 +455,10 @@ ui <- fluidPage(
                                                             ),
                                                   tabPanel("Check other reports",
                                                            tags$hr(),
-                                                           fluidRow(box(title = "Window selection", status = "success", solidHeader = TRUE, collapsible = TRUE, width = 12,
+                                                           fluidRow(box(title = "Window selection", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                         fluidRow(column(6, shinyFilesButton("replib_wsel", label = "Select your report file", title = "Please select a file",
                                                                                                             icon = icon("file"),
-                                                                                                            multiple = TRUE, viewtype = "detail", buttonType = "success", class = "btn-lg"))
+                                                                                                            multiple = TRUE, viewtype = "detail", buttonType = "primary", class = "btn-lg"))
                                                                         ),
                                                                         conditionalPanel(condition = "output.libdata_up",
                                                                                          tags$hr(),
@@ -476,7 +466,7 @@ ui <- fluidPage(
                                                                                                                          25, min = 5, step = 1)),
                                                                                                   column(4, checkboxInput("perfrac_wsel", "Average the best windows from each fraction", FALSE))
                                                                                          ),
-                                                                                         fluidRow(column(4, actionButton("go_wsel", "Get best windows", class = "btn-success")),
+                                                                                         fluidRow(column(4, actionButton("go_wsel", "Get best windows", class = "btn-primary")),
                                                                                                   column(6, radioButtons("whichplot_wsel", "", choices = c("Visualize global distribution" = "all",
                                                                                                                                                            "Visualize distribution from each fraction" = "frac"),
                                                                                                                          selected = "all",
@@ -993,12 +983,7 @@ server <- function(input, output, session){
       df <- Report_data$d
       if(!is.null(input$modif_pg)){
         idx_modif <- stringr::str_which(df$Modified.Sequence, paste(input$modif_pg, collapse = "|"))
-        if(input$remmodif_pg == "rem"){
-          df <- df[-idx_modif,]
-        }
-        else if(input$remmodif_pg == "keep"){
-          df <- df[idx_modif,]
-        }
+        df <- df[-idx_modif,]
       }
       brut <- df
       if(input$protypiconly_pg){
@@ -1189,12 +1174,7 @@ server <- function(input, output, session){
       df <- Report_data$d
       if(!is.null(input$modif_gg)){
         idx_modif <- stringr::str_which(df$Modified.Sequence, paste(input$modif_gg, collapse = "|"))
-        if(input$remmodif_gg == "rem"){
-          df <- df[-idx_modif,]
-        }
-        else if(input$remmodif_gg == "keep"){
-          df <- df[idx_modif,]
-        }
+        df <- df[-idx_modif,]
       }
       d <- diann_matrix(df,
                    id.header="Genes",
