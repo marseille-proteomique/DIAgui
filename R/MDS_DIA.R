@@ -5,16 +5,60 @@
 #' @param data Processed data from DIAnn (from iq processing or diann_matrix for example)
 #' @param transformation Which transformation do you want to apply (log2 or none)
 #' @param tit Title of your plot
+#' @param data_type The type of data you want to visualize; either 'intensity', 'Top3', 'iBAQ' or 'all'.
 #'
 #' @return ggplot2 MDS graph
 #'
 #' @export
 
-MDS_DIA <- function(data, transformation = c("log2", "none"), tit = ""){
+MDS_DIA <- function(data, transformation = c("log2", "none"),
+                    tit = "", data_type = c("intensity", "Top3", "iBAQ", "all")){
   m <- as.data.frame(data)
   cl <- lapply(m, class)
   cl <- cl == "numeric"
-  m <- m[,cl]
+  if(sum(cl) == 0){
+    message("No numeric data !")
+    return(NULL)
+  }
+  else if(sum(cl) == 1){
+    frac <- names(m)[cl]
+    rw <- rownames(m)
+    m <- as.data.frame(m[,cl])
+    names(m) <- frac
+    rownames(m) <- rw
+  }
+  else{
+    m <- m[,cl]
+    to_rm <- stringr::str_which(colnames(m), "nbTrypticPeptides|peptides_counts_all|^pep_count_")
+    if(length(to_rm) > 0){
+      if(length(to_rm) == ncol(m)){
+        message("No numeric data !")
+        return(NULL)
+      }
+      else{
+        m <- m[,-to_rm]
+      }
+    }
+    data_type <- match.arg(data_type)
+    if(data_type == "Top3"){
+      m <- m[,stringr::str_which(colnames(m), "^Top3_")]
+    }
+    else if(data_type == "iBAQ"){
+      m <- m[,stringr::str_which(colnames(m), "^iBAQ_")]
+    }
+    else if(data_type == "intensity"){
+      idx <- stringr::str_which(colnames(m), "^iBAQ_|^Top3_")
+      if(length(idx) > 0){
+        m <- m[,-idx]
+      }
+    }
+    else if(data_type == "all"){
+      message("You chose to keep all numeric data, they may differ completly.")
+    }
+    else{
+      stop("data_type can only be 'intensity', 'Top3', 'iBAQ' or 'all' .")
+    }
+  }
   tit2 <- ""
   if(transformation == "log2"){
     if(stringr::str_length(tit) == 0){

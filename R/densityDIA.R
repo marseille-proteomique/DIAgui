@@ -6,13 +6,14 @@
 #' @param transformation Which transformation do you want to apply (log2 or none)
 #' @param area logical; print the area under curve
 #' @param tit Title of your plot
+#' @param data_type The type of data you want to visualize; either 'intensity', 'Top3', 'iBAQ' or 'all'.
 #'
 #' @return ggplot2 density graph
 #'
 #' @export
 
 densityDIA <- function(data, transformation = c("log2", "none"), area = FALSE,
-                       tit = ""){
+                       tit = "", data_type = c("intensity", "Top3", "iBAQ", "all")){
   d <- as.data.frame(data)
   cl <- lapply(d, class)
   cl <- cl == "numeric"
@@ -29,6 +30,35 @@ densityDIA <- function(data, transformation = c("log2", "none"), area = FALSE,
   }
   else{
     d <- d[,cl]
+    to_rm <- stringr::str_which(colnames(d), "nbTrypticPeptides|peptides_counts_all|^pep_count_")
+    if(length(to_rm) > 0){
+      if(length(to_rm) == ncol(d)){
+        message("No numeric data !")
+        return(NULL)
+      }
+      else{
+        d <- d[,-to_rm]
+      }
+    }
+    data_type <- match.arg(data_type)
+    if(data_type == "Top3"){
+      d <- d[,stringr::str_which(colnames(d), "^Top3_")]
+    }
+    else if(data_type == "iBAQ"){
+      d <- d[,stringr::str_which(colnames(d), "^iBAQ_")]
+    }
+    else if(data_type == "intensity"){
+      idx <- stringr::str_which(colnames(d), "^iBAQ_|^Top3_")
+      if(length(idx) > 0){
+        d <- d[,-idx]
+      }
+    }
+    else if(data_type == "all"){
+      message("You chose to keep all numeric data, they may differ completly.")
+    }
+    else{
+      stop("data_type can only be 'intensity', 'Top3', 'iBAQ' or 'all' .")
+    }
   }
   tit2 <- ""
   if(transformation == "log2"){

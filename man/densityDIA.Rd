@@ -4,7 +4,13 @@
 \alias{densityDIA}
 \title{densityDIA}
 \usage{
-densityDIA(data, transformation = c("log2", "none"), area = FALSE, tit = "")
+densityDIA(
+  data,
+  transformation = c("log2", "none"),
+  area = FALSE,
+  tit = "",
+  data_type = c("intensity", "Top3", "iBAQ", "all")
+)
 }
 \arguments{
 \item{data}{Processed data from DIAnn (from iq processing or diann_matrix for example)}
@@ -14,6 +20,8 @@ densityDIA(data, transformation = c("log2", "none"), area = FALSE, tit = "")
 \item{area}{logical; print the area under curve}
 
 \item{tit}{Title of your plot}
+
+\item{data_type}{The type of data you want to visualize; either 'intensity', 'Top3', 'iBAQ' or 'all'.}
 }
 \value{
 ggplot2 density graph

@@ -4,7 +4,12 @@
 \alias{MDS_DIA}
 \title{MDS_DIA}
 \usage{
-MDS_DIA(data, transformation = c("log2", "none"), tit = "")
+MDS_DIA(
+  data,
+  transformation = c("log2", "none"),
+  tit = "",
+  data_type = c("intensity", "Top3", "iBAQ", "all")
+)
 }
 \arguments{
 \item{data}{Processed data from DIAnn (from iq processing or diann_matrix for example)}
@@ -12,6 +17,8 @@ MDS_DIA(data, transformation = c("log2", "none"), tit = "")
 \item{transformation}{Which transformation do you want to apply (log2 or none)}
 
 \item{tit}{Title of your plot}
+
+\item{data_type}{The type of data you want to visualize; either 'intensity', 'Top3', 'iBAQ' or 'all'.}
 }
 \value{
 ggplot2 MDS graph

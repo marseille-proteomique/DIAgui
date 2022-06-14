@@ -7,13 +7,14 @@
 #' @param maxna How many NAs do you authorize per proteins
 #' @param print_val logical; do you want to print values on heatmpa ?
 #' @param nm_id The name of column that contains the IDs (if NULL, will take it automatically)
+#' @param data_type The type of data you want to visualize; either 'intensity', 'Top3', 'iBAQ' or 'all'.
 #'
 #' @return Plotly heatmap
 #'
 #' @export
 
 heatmapDIA <- function(data, transformation = c("log2", "z.score_proteins", "z.score_fraction", "none"),
-                       maxna = 0, print_val = TRUE, nm_id = NULL){
+                       maxna = 0, print_val = TRUE, nm_id = NULL, data_type = c("intensity", "Top3", "iBAQ", "all")){
   if(length(transformation) > 1){
     stop("Please enter only one value for transformation : 'log2', 'z.score_protein', 'z.score_fraction', 'none'.")
   }
@@ -62,7 +63,37 @@ heatmapDIA <- function(data, transformation = c("log2", "z.score_proteins", "z.s
   else{
     H <- as.data.frame(cbind(H[,"id"], H[,cl]))
     names(H)[1] <- "id"
+    to_rm <- stringr::str_which(colnames(H), "nbTrypticPeptides|peptides_counts_all|^pep_count_")
+    if(length(to_rm) > 0){
+      if(length(to_rm) == ncol(H)){
+        message("No numeric data !")
+        return(NULL)
+      }
+      else{
+        H <- H[,-to_rm]
+      }
+    }
+    data_type <- match.arg(data_type)
+    if(data_type == "Top3"){
+      H <- H[,c(1, stringr::str_which(colnames(H), "^Top3_"))]
+    }
+    else if(data_type == "iBAQ"){
+      H <- H[,c(1, stringr::str_which(colnames(H), "^iBAQ_"))]
+    }
+    else if(data_type == "intensity"){
+      idx <- stringr::str_which(colnames(H), "^iBAQ_|^Top3_")
+      if(length(idx) > 0){
+        H <- H[,-idx]
+      }
+    }
+    else if(data_type == "all"){
+      message("You chose to keep all numeric data, they may differ completly.")
+    }
+    else{
+      stop("data_type can only be 'intensity', 'Top3', 'iBAQ' or 'all' .")
+    }
   }
+
   if(transformation == "log2"){
     idx <- stringr::str_which(names(H), "^id$")
     H <- as.data.frame(cbind(H[,idx], log2(H[,-idx])))
@@ -104,6 +135,7 @@ heatmapDIA <- function(data, transformation = c("log2", "z.score_proteins", "z.s
     }
   }
   H_na <- length(unique(H$id))
+  H$intensity[which(is.infinite(H$intensity))] <- NA
   H <- H %>% dplyr::group_by(id) %>%
     dplyr::filter(sum(is.na(intensity)) <= maxna)
   message(paste(H_na - length(unique(H$id)), "proteins has been removed because thay had more
@@ -111,7 +143,7 @@ heatmapDIA <- function(data, transformation = c("log2", "z.score_proteins", "z.s
   d_H <- H[,c("id", "fraction", "intensity")]
   d_H <- tidyr::spread(d_H, fraction, intensity)
   d_H <- dist(d_H[,-1])
-  d_H <- tidyr::replace_na(d_H, 0)
+  d_H[which(is.na(d_H))] <- 0
   prot_dend <- hclust(d_H)
   H$id <- factor(H$id, levels = unique(H$id)[prot_dend$order])
   H$id2 <- H$id
@@ -159,6 +191,7 @@ heatmapDIA <- function(data, transformation = c("log2", "z.score_proteins", "z.s
     ggplot2::scale_fill_gradientn(breaks = R,
                          colors = c("#09009D", "#ffffff", "#BE0010"),
                          limits = c(R[1], R[3]))
+
   if(print_val){
     g <- g +
       ggplot2::geom_text(ggplot2::aes(label = round(intensity,3)), color = "black", size = 3)

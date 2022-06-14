@@ -377,6 +377,10 @@ ui <- fluidPage(
 
                                                             conditionalPanel(condition = "output.visudata_up",
                                                                              fluidRow(box(title = "Visualiation", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
+                                                                                          conditionalPanel(condition = "output.top3_or_ibaq",
+                                                                                                           selectInput("dtype_visu", "Choose the type of data you want to visualize.",
+                                                                                                                       choices = c("intensity"))
+                                                                                                           ),
                                                                                           tabsetPanel(type = "tabs",
                                                                                                       tabPanel("Heatmap",
                                                                                                                tags$hr(),
@@ -385,11 +389,11 @@ ui <- fluidPage(
                                                                                                                                                           "Z-score on the proteins" = "z.score_protein",
                                                                                                                                                           "Z-score on the fractions" = "z.score_fraction",
                                                                                                                                                           "None" = "none"), selected = "none")),
-                                                                                                                        column(3, checkboxInput("prval_visu", "Print values on blocks", TRUE),
+                                                                                                                        column(3, checkboxInput("prval_visu", "Print values on blocks", FALSE),
                                                                                                                                sliderInput("maxna", "Choose the maximum number of missing values per rows",
                                                                                                                                            value = 0, min = 0, step = 1, max = 3)),
                                                                                                                         conditionalPanel(condition = "!output.reportdata_up | input.choice_visu == 'dat'",
-                                                                                                                                         column(3, textInput("nmid_visu", "Type the name of the column that conatain
+                                                                                                                                         column(3, textInput("nmid_visu", "Type the name of the column that contains
                                                                                                                                         the IDs"))
                                                                                                                                          ),
                                                                                                                         column(3, actionButton("seeheat_visu", "See heatmap", class = "btn-primary"))
@@ -1284,9 +1288,40 @@ server <- function(input, output, session){
         updateTextInput(session, "nmid_visu", value = "")
       }
     })
+    output$top3_or_ibaq <- reactive({
+      l <- FALSE
+      dt <- "intensity"
+      if(!is.null(visu_data())){
+        l <- str_extract(colnames(visu_data()), "^Top3|^iBAQ")
+        l <- l[!is.na(l)]
+        dt <- c(dt, unique(l))
+        l <- length(l) > 0
+      }
+      if(l){
+        updateSelectInput(session, "dtype_visu", choices = c(dt, "all"))
+      }
+      return(l)
+    })
+    outputOptions(output, "top3_or_ibaq", suspendWhenHidden = FALSE)
+
     observe({
       if(!is.null(visu_data())){
-        n <- lapply(visu_data(), class)
+        df <- visu_data()
+        to_rm <- str_which(colnames(df), "nbTrypticPeptides|peptides_counts_all|^pep_count_")
+        df <- df[,-to_rm]
+        if(input$dtype_visu == "Top3"){
+          df <- df[,str_which(colnames(df), "^Top3_")]
+        }
+        else if(input$dtype_visu == "iBAQ"){
+          df <- df[,str_which(colnames(df), "^iBAQ_")]
+        }
+        else if(input$dtype_visu == "intensity"){
+          idx <- str_which(colnames(df), "^iBAQ_|^Top3_")
+          if(length(idx) > 0){
+            df <- df[,-idx]
+          }
+        }
+        n <- lapply(df, class)
         n <- sum(n == "numeric")
         updateSliderInput(session, "maxna", max = n)
       }
@@ -1300,7 +1335,7 @@ server <- function(input, output, session){
       if(str_length(nm) == 0){
         nm <- NULL
       }
-      heatmapDIA(visu_data(), input$transfo_visu, input$maxna, input$prval_visu, nm)
+      heatmapDIA(visu_data(), input$transfo_visu, input$maxna, input$prval_visu, nm, data_type = input$dtype_visu)
     })
     observeEvent(input$seeheat_visu, {
       if(!is.null(visu_data())){
@@ -1338,7 +1373,7 @@ server <- function(input, output, session){
       d = NULL
     )
     dens <- reactive({
-      densityDIA(visu_data(), input$transfoD_visu, input$area_visu, input$titD_visu)
+      densityDIA(visu_data(), input$transfoD_visu, input$area_visu, input$titD_visu, data_type = input$dtype_visu)
     })
     observeEvent(input$seedens_visu, {
       if(!is.null(visu_data())){
@@ -1368,7 +1403,7 @@ server <- function(input, output, session){
       m = NULL
     )
     mds <- reactive({
-      MDS_DIA(visu_data(), input$transfoM_visu, input$titM_visu)
+      MDS_DIA(visu_data(), input$transfoM_visu, input$titM_visu, data_type = input$dtype_visu)
     })
     observeEvent(input$seemds_visu, {
       if(!is.null(visu_data())){

@@ -9,7 +9,8 @@ heatmapDIA(
   transformation = c("log2", "z.score_proteins", "z.score_fraction", "none"),
   maxna = 0,
   print_val = TRUE,
-  nm_id = NULL
+  nm_id = NULL,
+  data_type = c("intensity", "Top3", "iBAQ", "all")
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ heatmapDIA(
 \item{print_val}{logical; do you want to print values on heatmpa ?}
 
 \item{nm_id}{The name of column that contains the IDs (if NULL, will take it automatically)}
+
+\item{data_type}{The type of data you want to visualize; either 'intensity', 'Top3', 'iBAQ' or 'all'.}
 }
 \value{
 Plotly heatmap
