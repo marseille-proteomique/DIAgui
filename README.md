@@ -35,3 +35,5 @@ You can now load it and run the app with this commands :
 library(DIAgui)
 runDIAgui()
 ```
+
+If you want to learn more about the app, check the [tutorial](https://www.youtube.com/watch?v=vfvh15Q93eU) !
