@@ -207,9 +207,9 @@ ui <- fluidPage(
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
                                                                     radioButtons("wLFQ_peplfq", "",
-                                                                                 choices = c("Use MaxLFQ from diann package" = "diann",
-                                                                                             "Use fast MaxLFQ from iq package (log2 transformed)" = "iq"),
-                                                                                 selected = "diann",
+                                                                                 choices = c("Use fast MaxLFQ from iq package (log2 transformed)" = "iq",
+                                                                                             "Use MaxLFQ from diann package" = "diann"),
+                                                                                 selected = "iq",
                                                                                  inline = TRUE),
                                                                     fluidRow(column(3, checkboxInput("protypiconly_peplfq", "Proteotypic only", TRUE)),
                                                                              column(3, selectInput("centercol_peplfq", "Choose identifier to quantify",
@@ -260,9 +260,9 @@ ui <- fluidPage(
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
                                                                     radioButtons("wLFQ_pg", "",
-                                                                                 choices = c("Use MaxLFQ from diann package" = "diann",
-                                                                                             "Use fast MaxLFQ from iq package (log2 transformed)" = "iq"),
-                                                                                 selected = "diann",
+                                                                                 choices = c("Use fast MaxLFQ from iq package (log2 transformed)" = "iq",
+                                                                                             "Use MaxLFQ from diann package" = "diann"),
+                                                                                 selected = "iq",
                                                                                  inline = TRUE),
                                                                     fluidRow(column(3, checkboxInput("onlycountall_pg", "Only keep peptides counts all", TRUE)),
                                                                              column(3, checkboxInput("protypiconly_pg", "Proteotypic only", TRUE)),
@@ -500,6 +500,10 @@ ui <- fluidPage(
     bslib::nav_item(a(href = "mailto:marco.gerault@gmail.com",
                       icon("envelope"),
                       title = "Any questions, suggestions or bug report ? Feel free to send me an e-mail !")
+                    ),
+    bslib::nav_item(a(href = "https://youtu.be/vfvh15Q93eU",
+                      icon("question-circle"),
+                      title = "See the tutorial video")
                     )
     )
 )
