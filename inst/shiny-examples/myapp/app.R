@@ -426,6 +426,25 @@ ui <- fluidPage(
                                                                                                                withSpinner(plotOutput("mds_visu", height = "800px"), type = 6),
                                                                                                                downloadButton("down_mds", "Download MDS plot")
                                                                                                                ),
+                                                                                                      tabPanel("Proportion of valid values",
+                                                                                                               tags$hr(),
+                                                                                                               fluidRow(column(3, selectInput("transfoPVV_visu", "Choose a data transformation",
+                                                                                                                                              choices = c("Log2" = "log2",
+                                                                                                                                                          "None" = "none"), selected = "none"),
+                                                                                                                               numericInput("propcutPVV_visu", "Choose the minimum proportion to show on the graph",
+                                                                                                                                           value = 0, min = 0, max = 1, step = 0.05)),
+                                                                                                                        column(3, textInput("titPVV_visu", "Choose a title for your plot (can be NULL)")),
+                                                                                                                        column(3, textInput("designPVV_visu", "Type the design of your experiment that match your columns names,
+                                                                                                                                                               separated by a comma.
+                                                                                                                                                               For example, if you have columns named '37_B1_Treatment', type 'temperature,replicate,condition'.")),
+                                                                                                                        column(3, selectInput("checkPVV_visu", "Choose the grouping variable (same as in your design; like 'replicate' for example)",
+                                                                                                                                              choices = NULL))
+                                                                                                                        ),
+                                                                                                               fluidRow(column(3, actionButton("seePVV_visu", "See PVV plot", class = "btn-primary"))),
+                                                                                                               tags$hr(),
+                                                                                                               withSpinner(plotOutput("PVV_visu", height = "800px"), type = 6),
+                                                                                                               downloadButton("down_PVV", "Download Proportion valid values plot")
+                                                                                                               ),
                                                                                                       tabPanel("Retention time",
                                                                                                                conditionalPanel(condition = "input.choice_visu == 'base'",
                                                                                                                                 tags$hr(),
@@ -974,9 +993,8 @@ server <- function(input, output, session){
         fts <- File$datapath
       }
       else{
-        fts <- NULLL
+        fts <- NULL
       }
-      print(fts)
       fts
     })
 
@@ -1435,6 +1453,51 @@ server <- function(input, output, session){
       },
       content = function(file){
         ggsave(file, plot = mds_ev$m, device = "png",
+               width = 8, height = 8)
+      }
+    )
+
+
+    ## PVV
+    observe({
+      if(stringr::str_length(input$designPVV_visu) != 0){
+        updateSelectInput(session, "checkPVV_visu", choices = stringr::str_split(input$designPVV_visu, ",")[[1]])
+      }
+    })
+
+    pvv_ev <- reactiveValues(
+      m = NULL
+    )
+    pvv <- reactive({
+      if(stringr::str_length(input$designPVV_visu) != 0){
+        design <- stringr::str_split(input$designPVV_visu, ",")[[1]]
+      }
+      else{
+        design <- NULL
+      }
+      validDIA(visu_data(), transformation = input$transfoPVV_visu, input$titPVV_visu, data_type = input$dtype_visu,
+               design = design,
+               to_check = input$checkPVV_visu, prop_cut = input$propcutPVV_visu)
+    })
+    observeEvent(input$seePVV_visu, {
+      if(!is.null(visu_data())){
+        showNotification("Get PVV plot", type = "message", duration = 4)
+        pvv_ev$m <- pvv()
+      }
+      else{
+        showNotification("Your data are NULL ! Start the calculation for the data you selected
+                         or import a file", type = "error")
+      }
+    })
+    output$PVV_visu <- renderPlot({
+      pvv_ev$m
+    })
+    output$down_PVV <- downloadHandler(
+      filename = function() {
+        paste0("PVVPlot_dia_", Sys.Date(), ".png")
+      },
+      content = function(file){
+        ggsave(file, plot = pvv_ev$m, device = "png",
                width = 8, height = 8)
       }
     )

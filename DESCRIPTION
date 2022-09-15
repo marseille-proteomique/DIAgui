@@ -1,5 +1,5 @@
 Package: DIAgui
-Version: 1.2.2.9000
+Version: 1.2.3.9000
 Type: Package
 Title: A shiny app for processing DIAnn output in proteomics
 Author: Marc-Antoine GERAULT
@@ -17,7 +17,8 @@ Depends:
     R (>= 4.0.0),
     dplyr (>= 1.0.0),
     iq (>= 1.9.0),
-    seqinr (>= 4.2)
+    seqinr (>= 4.2),
+    ggplot2 (>= 3.3.0)
 Imports: 
     shiny,
     shinydashboard,
