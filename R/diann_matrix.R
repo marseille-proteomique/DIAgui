@@ -13,7 +13,10 @@
 #' @param get_pep logical; get peptide count ?
 #' @param only_pepall logical; should only keep peptide counts all or also peptide counts for each fractions ?
 #' @param Top3 logical; get Top3 absolute quantification
-#' @param method When for one identifier there are several values, take either maximum of these or sum them all.
+#' @param method When for one identifier there are several values,
+#'               take either maximum of these or sum them all. When using 'sum', any additional information than
+#'               the id.header shouldn't be taken account. 'max' report for only one id, 'sum' get the summed intensities
+#'               from all ids.
 #'
 #' @return A dataframe containing the quantities from the id you selected
 #'
@@ -155,7 +158,7 @@ pivot_aggregate <- function (df, sample.header, id.header, quantity.header, meth
   else if(method == "sum"){
     piv <- x %>% dplyr::group_by(!!dplyr::sym(sample.header), !!dplyr::sym(id.header)) %>%
       dplyr::summarise("results" = sum(value, na.rm = TRUE),
-                       "add_info" = add_info[which(value == sum(value, na.rm = TRUE))])
+                       "add_info" = add_info[which(value == max(value, na.rm = TRUE))])
   }
   else{
     stop("method can only be max or sum")
