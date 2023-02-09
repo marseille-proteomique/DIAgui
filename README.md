@@ -1,17 +1,17 @@
 # DIAgui
-DIAgui is a r package that contains a user-friendly shiny app to process output from DIA-nn proteomics software. Since shiny can be quite slow to process big data file,
+DIAgui is an R package that contains a user-friendly shiny app to process output from DIA-nn proteomics software. Since shiny can be quite slow to process big data file,
 a function that does the complete workflow and saves all results in a directory is also present. 
-The process is as follow : filtering data according q.values, applying MaxLFQ algorithm for quantification, getting some other informations, plot some graphs to check data quality.
+The process is as follow: filtering data according q.values, applying MaxLFQ algorithm for quantification, getting some other informations, plot some graphs to check data quality.
 
 This package is based on [diann-rpackage](https://github.com/vdemichev/diann-rpackage) from Vadim Demichev. The c++ source code is exactly the same as the one from V.Demichev,
-it is used for MaxLFQ algorithm. You can also use [iq](https://cran.r-project.org/web/packages/iq/index.html) r package which is way faster to run MaxLFQ algorithm.
+it is used for MaxLFQ algorithm. You can also use [iq](https://cran.r-project.org/web/packages/iq/index.html) R package which is way faster to run MaxLFQ algorithm.
 
 In addition to filter data and calculate MaxLFQ intensities, you can also get the Top3 and iBAQ quantification within the app.
 
 # How to install and use DIAgui ?
 First, go to Rstudio. Before installing DIAgui, you will need to install [limma](https://bioconductor.org/packages/release/bioc/html/limma.html)
 package from bioconductor in order to use all functionnalities from the app.
-Run this commands :
+Run this commands:
 
 ```c
 if(!requireNamespace("BiocManager", quietly = TRUE)){
@@ -20,16 +20,16 @@ if(!requireNamespace("BiocManager", quietly = TRUE)){
 BiocManager::install("limma")  
 ```
 
-You can now install DIAgui from github : 
+You can now install DIAgui from github: 
 
 ```c
 if(!requireNamespace("devtools", quietly = TRUE)){
    install.packages("devtools") 
 }
-devtools::install_github("marseille-proteomique/DIAgui")
+devtools::install_github("mgerault/DIAgui")
 ```
 
-You can now load it and run the app with this commands : 
+You can now load it and run the app with this commands: 
 
 ```c
 library(DIAgui)
