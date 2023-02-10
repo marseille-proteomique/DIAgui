@@ -818,6 +818,8 @@ server <- function(input, output, session){
           showNotification("Your report doesn't contain the PTM informations !", type = "warning", duration = 5)
         }
       }
+
+      d
     })
     observeEvent(input$go_pep, {
       withCallingHandlers({
@@ -952,6 +954,8 @@ server <- function(input, output, session){
           showNotification("Your report doesn't contain the PTM informations !", type = "warning", duration = 5)
         }
       }
+
+      d
     })
     observeEvent(input$go_peplfq, {
       if(input$centercol_peplfq == "Stripped.Sequence"){
