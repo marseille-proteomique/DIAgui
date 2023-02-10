@@ -94,7 +94,22 @@ get_iBAQ <- function (dataset, proteinDB = list(),
 }
 
 
-### function from SafeQuant R package : Erik Ahrne (2021). SafeQuant: A Toolbox for the Analysis of Proteomics Data. R package version 2.3.4.
+#' getProtease
+#'
+#' Returns a regular corresponding to the given enzyme in order to digest a
+#' proteic sequence.
+#'
+#' @param protease name of the enzyme; currently "trypsin" or "lys-c"
+#'
+#' @return a regular expression
+#' @export
+#'
+#' @note function from SafeQuant R package by Erik Ahrne (2021). SafeQuant: A
+#'   Toolbox for the Analysis of Proteomics Data. R package version 2.3.4.
+#'
+#' @examples
+#' getProtease()
+
 getProtease <- function (protease = "trypsin") {
   if (protease == "trypsin") {
     return("[KR](?!P)")
@@ -106,11 +121,15 @@ getProtease <- function (protease = "trypsin") {
     stop("Unknown Protease:", protease)
   }
 }
+
+
 getNbDetectablePeptides <- function (peptides, peptideLength = c(5, 36)) {
   okLength <- (nchar(peptides) >= peptideLength[1]) & (nchar(peptides) <=
                                                          peptideLength[2])
   return(sum(okLength))
 }
+
+
 getPeptides <- function (proteinSeq, proteaseRegExp = getProtease("trypsin"),
                          nbMiscleavages = 0, minLength = 0, maxLength = Inf) {
   allAA <- as.vector(unlist(strsplit(proteinSeq, "")))
