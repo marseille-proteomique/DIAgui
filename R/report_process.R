@@ -36,7 +36,7 @@ report_process <- function(data, header.id = "Protein.Group", sample.id = "File.
                            fasta = NULL, species = NULL, peptide_length = c(5,36),
                            format = c("xlsx", "csv", "txt")){
 
-  if(length(stringr::str_subset(class(data), "^character$")) >= 1){
+  if(inherits(data, "character")){
     if(file.exists(data)){
       extension <- stringr::str_split(data, "\\.")[[1]]
       if(length(extension) == 1){
@@ -209,7 +209,7 @@ report_process <- function(data, header.id = "Protein.Group", sample.id = "File.
                      id_name = "Protein.Group",
                      ecol = n_info:(n_cond+1),
                      peptideLength = peptide_length,
-                     proteaseRegExp = DIAgui:::getProtease("trypsin"),
+                     proteaseRegExp = getProtease("trypsin"),
                      log2_transformed = TRUE)
     brut <- brut[,-c(n_info:(n_cond+1))]
     iq_report <- dplyr::left_join(iq_report, brut, by = "Protein.Group")
