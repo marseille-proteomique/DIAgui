@@ -9,18 +9,7 @@ it is used for MaxLFQ algorithm. You can also use [iq](https://cran.r-project.or
 In addition to filter data and calculate MaxLFQ intensities, you can also get the Top3 and iBAQ quantification within the app.
 
 # How to install and use DIAgui ?
-First, go to Rstudio. Before installing DIAgui, you will need to install [limma](https://bioconductor.org/packages/release/bioc/html/limma.html)
-package from bioconductor in order to use all functionnalities from the app.
-Run this commands:
-
-```c
-if(!requireNamespace("BiocManager", quietly = TRUE)){
-   install.packages("BiocManager")  
-}
-BiocManager::install("limma")  
-```
-
-You can now install DIAgui from github: 
+First, go to Rstudio. Install DIAgui from github: 
 
 ```c
 if(!requireNamespace("devtools", quietly = TRUE)){
