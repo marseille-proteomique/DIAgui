@@ -10,8 +10,9 @@
 #' @param group.header Colulmn name corresponding to the group Id, e.g. protein Id
 #' @param id.header Id column name (protein, gene, ...)
 #' @param quantity.header Quantity column name
-#' @param get_pep logical; get peptide count ?
-#' @param only_pepall logical; should only keep peptide counts all or also peptide counts for each fractions ?
+#' @param margin TBD
+#' @param count_pep logical; get peptide count ?
+#' @param only_countsall logical; should only keep peptide counts all or also peptide counts for each fractions ?
 #' @param Top3 logical; get Top3 absolute quantification
 #'
 #' @return A dataframe containing the quantities from the id you selected

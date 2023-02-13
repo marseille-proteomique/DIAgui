@@ -19,7 +19,7 @@
 #' @export
 
 get_bestwind <- function(data, bins = 25, per_frac = FALSE){
-  if(class(data) == "character"){
+  if(inherits(data) == "character"){
     if(stringr::str_detect(data, "\\.tsv$"))
       data <-  diann_load(data)
     else{

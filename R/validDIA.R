@@ -23,7 +23,7 @@
 validDIA <- function(data, transformation = c("log2", "none"),
                      tit = "", data_type = c("intensity", "Top3", "iBAQ", "all"),
                      design = NULL, to_check = NULL, prop_cut = 0.75){
-  if(class(prop_cut) != "numeric" & class(prop_cut) != "integer"){
+  if(!inherits(prop_cut, "numeric")){
     stop("'prop_cut' needs to be a numeric between 0 and 1")
   }
   else if(prop_cut > 1){
@@ -108,7 +108,7 @@ validDIA <- function(data, transformation = c("log2", "none"),
                     title = tit) +
       ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   }
-  else if(class(design) == "character"){
+  else if(inherits(design, "character")){
     if(length(to_check) == 1 & to_check %in% design){
       d$id <- data[[1]]
       d <- d %>% tidyr::gather("cond", "value", -id) %>%

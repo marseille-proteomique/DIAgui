@@ -1191,7 +1191,7 @@ server <- function(input, output, session){
                       id_name = "Protein.Group",
                       ecol = 2:(n_cond+1),
                       peptideLength = input$peplen_pg,
-                      proteaseRegExp = DIAgui:::getProtease(input$enzyme_pg),
+                      proteaseRegExp = getProtease(input$enzyme_pg),
                       log2_transformed = input$wLFQ_pg == "iq")
         brut <- brut[,-c(2:(n_cond+1))]
         d <- dplyr::left_join(d, brut, by = "Protein.Group")
