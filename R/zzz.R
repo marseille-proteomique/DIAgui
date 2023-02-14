@@ -1,12 +1,4 @@
-#check if limma is installed
 .onAttach <- function(libname, pkgname){
-  if (!requireNamespace("limma", quietly = TRUE)) {
-    packageStartupMessage(
-      "Please install 'limma' package by runing",
-      " 'BiocManager::install('limma')'",
-      " Otherwise, you won't be able to see MDS plot."
-    )
-  }
   packageStartupMessage(
     "\n",
     "Welcome to DIAgui package! To launch the app, run runDIAgui() function.\n",
