@@ -923,7 +923,7 @@ server <- function(input, output, session){
         d <- as.data.frame(d)
       }
       nc <- ncol(d)
-      d <- d[order(rownames(d)),]
+      d <- d[order(rownames(d)), , drop=FALSE]
 
       df <- df[(df$Modified.Sequence %in% rownames(d)),]
       df <- df[order(df$Modified.Sequence),]
