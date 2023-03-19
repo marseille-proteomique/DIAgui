@@ -923,7 +923,7 @@ server <- function(input, output, session){
         d <- as.data.frame(d)
       }
       nc <- ncol(d)
-      d <- d[order(rownames(d)), , drop=FALSE]
+      d <- d[order(rownames(d)), , drop = FALSE]
 
       df <- df[(df$Modified.Sequence %in% rownames(d)),]
       df <- df[order(df$Modified.Sequence),]
@@ -1109,10 +1109,11 @@ server <- function(input, output, session){
         pc <- as.data.frame(pc)
         rownames(pc) <- pc$protein_list
         pc$protein_list <- NULL
-        pc <- pc[order(rownames(pc)), , drop=FALSE]
+        pc <- pc[order(rownames(pc)), , drop = FALSE]
         colnames(pc) <- paste0("pep_count_", colnames(pc))
         pc$peptides_counts_all <- unname(apply(pc, 1, max))
         pc <- pc[,c(ncol(pc), 1:(ncol(pc)-1))]
+
 
         if(input$Top3_pg){
           Top3 <- iq::preprocess(df,
@@ -1141,13 +1142,13 @@ server <- function(input, output, session){
           rownames(Top3) <- Top3$protein_list
           Top3$protein_list <- NULL
           colnames(Top3) <- paste0("Top3_", colnames(Top3))
-          Top3 <- Top3[order(rownames(Top3)), , drop=FALSE]
+          Top3 <- Top3[order(rownames(Top3)), , drop = FALSE]
         }
 
         d <- iq::fast_MaxLFQ(d)
         d <- d$estimate
         d <- as.data.frame(d)
-        d <- d[order(rownames(d)), , drop=FALSE]
+        d <- d[order(rownames(d)), , drop = FALSE]
         if(input$Top3_pg){
           d <- cbind(d, Top3)
         }
