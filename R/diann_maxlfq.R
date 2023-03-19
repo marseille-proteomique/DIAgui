@@ -120,7 +120,7 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
   }
   result <- exp(result)
   result <- as.data.frame(result)
-  result <- result[order(rownames(result)),]
+  result <- result[order(rownames(result)), , drop = FALSE]
 
   if(Top3){
     all_iden_brut <- lapply(all_iden_brut, function(x){
@@ -171,7 +171,7 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
     rownames(top3_piv) <- p
 
     sumup <- rbind(top3_iden, top3_piv)
-    sumup <- sumup[order(rownames(sumup)),]
+    sumup <- sumup[order(rownames(sumup)), , drop = FALSE]
     colnames(sumup) <- paste0("Top3_", colnames(sumup))
     sumup <- exp(sumup)
 
@@ -227,7 +227,7 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
       rownames(all_piv) <- p
 
       sumup <- rbind(all_iden, all_piv)
-      sumup <- sumup[order(rownames(sumup)),]
+      sumup <- sumup[order(rownames(sumup)), , drop = FALSE]
       colnames(sumup) <- paste0("pep_count_", colnames(sumup))
 
       result <- cbind(result, sumup)
