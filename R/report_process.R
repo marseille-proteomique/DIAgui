@@ -25,6 +25,7 @@
 #' @param peptide_length The minimum and maximum peptide length
 #' @param format Format from your saved file (only xlsx, csv and txt are supported)
 #'
+#' @importFrom utils write.csv write.table
 #'
 #' @export
 
