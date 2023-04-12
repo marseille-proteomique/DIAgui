@@ -1165,7 +1165,14 @@ server <- function(input, output, session){
       df <- df[(df$Protein.Group %in% d$Protein.Group),]
       df <- df[order(df$Protein.Group),]
       d$Protein.Names <- unique(df[,c("Protein.Group", "Protein.Names")])$Protein.Names
-      d$First.Protein.Description <- unique(df[,c("Protein.Group", "First.Protein.Description")])$First.Protein.Description
+      if("First.Protein.Description" %in% colnames(df)){
+        d$First.Protein.Description <- unique(df[,c("Protein.Group", "First.Protein.Description")])$First.Protein.Description
+      }
+      else{
+        showNotification("The column 'First.Protein.Description' is not in your report !",
+                         type = "warning")
+        d$First.Protein.Description <- NA
+      }
       d$Genes <- unique(df[,c("Protein.Group", "Genes")])$Genes
       d <- d[,c((nc+1):ncol(d), 1:nc)]
 
