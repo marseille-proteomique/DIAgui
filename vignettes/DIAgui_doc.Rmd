@@ -245,7 +245,7 @@ MDS_DIA(genes, transformation =  "log2", data_type = "intensity", tit = "My plot
 heatmapDIA(genes, transformation = "log2", print_val = FALSE, data_type = "intensity")
 ```
 
-You can also visualize the proportion of valid values according the percentage of identifiers (here the genes) for an accepted specific percentage of missing value:
+You can also visualize the proportion of non-missing values according the percentage of identifiers (here the genes) for an accepted specific percentage of missing value:
 
 ```{r, eval=FALSE}
 validDIA(genes, "log2", data_type = "intensity", prop_cut = 0.75) # we keep approximately 90% of the genes

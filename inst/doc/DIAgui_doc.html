@@ -11,7 +11,7 @@
 
 <meta name="author" content="Marc-Antoine GERAULT" />
 
-<meta name="date" content="2023-02-13" />
+<meta name="date" content="2023-06-21" />
 
 <title>Process the output from the proteomics DIA-NN software</title>
 
@@ -1577,7 +1577,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">Process the output from the proteomics
 DIA-NN software</h1>
 <h4 class="author">Marc-Antoine GERAULT</h4>
-<h4 class="date">2023-02-13</h4>
+<h4 class="date">2023-06-21</h4>
 
 </div>
 
@@ -1805,8 +1805,8 @@ heatmap:</p>
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># interactive heatmap</span></span>
 <span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">heatmapDIA</span>(genes, <span class="at">transformation =</span> <span class="st">&quot;log2&quot;</span>, <span class="at">print_val =</span> <span class="cn">FALSE</span>, <span class="at">data_type =</span> <span class="st">&quot;intensity&quot;</span>)</span></code></pre></div>
-<p>You can also visualize the proportion of valid values according the
-percentage of identifiers (here the genes) for an accepted specific
+<p>You can also visualize the proportion of non-missing values according
+the percentage of identifiers (here the genes) for an accepted specific
 percentage of missing value:</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">validDIA</span>(genes, <span class="st">&quot;log2&quot;</span>, <span class="at">data_type =</span> <span class="st">&quot;intensity&quot;</span>, <span class="at">prop_cut =</span> <span class="fl">0.75</span>) <span class="co"># we keep approximately 90% of the genes</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
