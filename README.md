@@ -9,7 +9,14 @@ it is used for MaxLFQ algorithm. You can also use [iq](https://cran.r-project.or
 In addition to filter data and calculate MaxLFQ intensities, you can also get the Top3 and iBAQ quantification within the app.
 
 # How to install and use DIAgui ?
-First, go to Rstudio. Install DIAgui from github: 
+
+### Requirement
+
+* R version >= 4.0
+* Rstudio 
+
+### Installation
+Go to Rstudio. Install DIAgui from github: 
 
 ```c
 if(!requireNamespace("devtools", quietly = TRUE)){
