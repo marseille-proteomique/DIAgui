@@ -33,3 +33,7 @@ runDIAgui()
 ```
 
 If you want to learn more about the app, check the [tutorial](https://www.youtube.com/watch?v=vfvh15Q93eU) !
+
+### Toy dataset
+
+If you want to test the application, you can download a toy dataset [here](https://drive.google.com/file/d/1BVAGqKIkdqIqhebunM7K_FdSrOhXudA9/view?usp=sharing) which contain a small report from saccharomyces cerevisiae with its corresponding FASTA file. For information about the data, you access access its documentation in R via ``` ?small_report ```
