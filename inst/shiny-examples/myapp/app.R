@@ -663,7 +663,7 @@ ui <- fluidPage(
                                                                                                                                                                                "Imputation with min value (MinDet)" = "MinDet",
                                                                                                                                                                                "Imputation by random draws (MinProb)" = "MinProb",
                                                                                                                                                                                "Imputation based on quantile regression (QRILC)" = "QRILC"),
-                                                                                                                                                                   selected = "norm.predict"
+                                                                                                                                                                   selected = "QRILC"
                                                                                                                                                                    )
                                                                                                                                                     ),
                                                                                                                                              column(3, actionButton("goimputation_stat", "Start imputation", class = "btn-lg btn-primary"))
