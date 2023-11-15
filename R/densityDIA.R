@@ -73,7 +73,7 @@ densityDIA <- function(data, transformation = c("none", "log2"), area = FALSE,
   tit2 <- ""
   transformation <- match.arg(transformation)
   if(transformation == "log2"){
-    if(stringr::str_length(tit) == 0){
+    if(nchar(tit) == 0){
       tit2 <- ", Log2 transformed"
     }
     d <- log2(d)
@@ -82,7 +82,7 @@ densityDIA <- function(data, transformation = c("none", "log2"), area = FALSE,
     transformation <- "none"
   }
   d <- tidyr::gather(d, fraction, intensity)
-  if(stringr::str_length(tit) == 0){
+  if(nchar(tit) == 0){
     tit <- paste0("Density plot", tit2)
   }
 

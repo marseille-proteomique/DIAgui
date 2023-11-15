@@ -51,7 +51,7 @@ validDIA <- function(data, transformation = c("none", "log2"),
   else{
     d <- d[,cl]
     to_rm <- stringr::str_which(colnames(d), "nbTrypticPeptides|peptides_counts_all|^pep_count_")
-    if(length(to_rm) > 0){
+    if(length(to_rm)){
       if(length(to_rm) == ncol(d)){
         message("No numeric data !")
         return(NULL)
@@ -69,7 +69,7 @@ validDIA <- function(data, transformation = c("none", "log2"),
     }
     else if(data_type == "intensity"){
       idx <- stringr::str_which(colnames(d), "^iBAQ_|^Top3_")
-      if(length(idx) > 0){
+      if(length(idx)){
         d <- d[,-idx]
       }
     }
@@ -82,7 +82,7 @@ validDIA <- function(data, transformation = c("none", "log2"),
   }
   tit2 <- ""
   if(transformation == "log2"){
-    if(stringr::str_length(tit) == 0){
+    if(nchar(tit) == 0){
       tit2 <- "\nLog2 transformed"
     }
     d <- log2(d)
@@ -92,7 +92,7 @@ validDIA <- function(data, transformation = c("none", "log2"),
     transformation <- "none"
   }
   if(stringr::str_length(tit) == 0){
-    tit <- paste0("non-missing value proportion", tit2)
+    tit <- paste("non-missing value proportion", tit2)
   }
 
   if(is.null(design)){
@@ -111,7 +111,7 @@ validDIA <- function(data, transformation = c("none", "log2"),
       ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   }
   else if(inherits(design, "character")){
-    if(length(to_check) == 1 & to_check %in% design){
+    if(length(to_check) & to_check %in% design){
       d$id <- data[[1]]
       d <- d %>% tidyr::gather("cond", "value", -id) %>%
         tidyr::separate("cond", into = design) %>%
@@ -119,7 +119,9 @@ validDIA <- function(data, transformation = c("none", "log2"),
         mutate(prop_valid =  sum(!is.na(value))/length(value))
 
       d <- unique(d[,c("id", to_check, "prop_valid")])
-      d <- d %>% group_by_at(to_check) %>% mutate(ord = 100*(order(order(prop_valid, decreasing = TRUE))/nrow(data)))
+      d <- d %>% group_by_at(to_check) %>%
+        mutate(ord = 100*(order(order(prop_valid, decreasing = TRUE))/nrow(data)))
+      d <- d[order(d$ord, decreasing = TRUE),]
 
       g <- ggplot2::ggplot(d, ggplot2::aes_string("ord", "prop_valid", color = to_check)) +
         ggplot2::geom_path(linewidth = 1.25, color = "#1B52FB") +

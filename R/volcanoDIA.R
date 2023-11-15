@@ -81,12 +81,12 @@ volcanoDIA <- function(data, control, treated, id = NULL,
   transformation <- match.arg(transformation)
   tit2 <- ""
   if(transformation == "log2"){
-    if(stringr::str_length(tit) == 0){
+    if(nchar(tit) == 0){
       tit2 <- ", Log2 transformed"
     }
     data[,c(control, treated)] <- log2(data[,c(control, treated)])
   }
-  if(stringr::str_length(tit) == 0){
+  if(nchar(tit) == 0){
     tit <- paste0("Volcano plot", tit2)
   }
 

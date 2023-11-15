@@ -65,7 +65,7 @@ MDS_DIA <- function(data, transformation = c("log2", "none"),
   tit2 <- ""
   transformation <- match.arg(transformation)
   if(transformation == "log2"){
-    if(stringr::str_length(tit) == 0){
+    if(nchar(tit) == 0){
       tit2 <- ", Log2 transformed"
     }
     m <- log2(m)
@@ -73,8 +73,8 @@ MDS_DIA <- function(data, transformation = c("log2", "none"),
   else if(transformation != "none"){
     transformation <- "none"
   }
-  if(stringr::str_length(tit) == 0){
-    tit <- paste0(deparse(substitute(data)), tit2)
+  if(nchar(tit) == 0){
+    tit <- paste0("MDS plot", tit2)
   }
 
   m <- as.matrix(m)
