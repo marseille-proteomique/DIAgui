@@ -83,6 +83,14 @@ ui <- fluidPage(
                                                             ),
                                                    tags$hr(),
                                                    conditionalPanel(condition = "output.reportdata_up",
+                                                                    tags$u(h2("Filter contaminants")),
+                                                                    fluidRow(column(4, radioButtons("cont_prorsu_dat", "",
+                                                                                                    choices = c("prefix", "suffix"), selected = "prefix")),
+                                                                             column(4, textInput("conta_dat", "Type the prefix indicating contaminants in the Protein.Group column")),
+                                                                             column(4, actionButton("rmconta_dat", "Remove contaminants", class = "btn-primary"))
+                                                                             ),
+                                                                    htmlOutput("resconta_data"),
+
                                                                     tags$u(h2("Your data")),
                                                                     fluidRow(column(12, DT::dataTableOutput("df_report"))),
                                                                     tags$hr(),
@@ -393,6 +401,25 @@ ui <- fluidPage(
                                                                                           ),
                                                                          conditionalPanel(condition = "!output.reportdata_up | input.choice_visu == 'dat'",
                                                                                           fileInput("ydata_visu", "Import your data. The protein group file, for example.")
+                                                                                          ),
+
+                                                                         conditionalPanel(condition = "output.visudata_up",
+                                                                                          tags$hr(),
+                                                                                          shiny::HTML("<h3>Filter IDs of interest</h3>"),
+                                                                                          fluidRow(column(6, checkboxInput("keepingid_visu", "Import a list of IDs to select from your data", FALSE),
+                                                                                                          shiny::HTML("<h5>The file can be a txt, xlsx ro csv file. It needs to contain
+                                                                                                                       the column 'id' and those ids needs to corresponds with the data you
+                                                                                                                       selected; i.e. if you choose 'Protein.Group' the id needs to be
+                                                                                                                       protein group, if it's peptides it needs to be peptides. If you are
+                                                                                                                       not using an output from the app but an imported data file, the ids
+                                                                                                                       corresponds to the first column of your dataset.<br><br>
+                                                                                                                       Note: you can directly use the saved xlsx file output from the tab
+                                                                                                                      'Volcano plot'; it will filter the ids with 'significant' to TRUE.</h5>")
+                                                                                                          ),
+                                                                                                   conditionalPanel(condition = "input.keepingid_visu",
+                                                                                                                    column(6, fileInput("idtokeep_visu", "Import your list of IDs of interest"))
+                                                                                                                    )
+                                                                                                   )
                                                                                           )
                                                                          )
                                                                      ),
@@ -424,7 +451,7 @@ ui <- fluidPage(
                                                                                                                                              column(3, sliderInput("maxna", "Choose the maximum number of missing values per rows",
                                                                                                                                                                    value = 0, min = 0, step = 1, max = 3)),
                                                                                                                                              conditionalPanel(condition = "!output.reportdata_up | input.choice_visu == 'dat'",
-                                                                                                                                                              column(3, textInput("nmid_visu", "Type the name of the column that contains the IDs"))
+                                                                                                                                                              column(3, textInput("nmid_visu", "Type the name of the column that contains the IDs", "id"))
                                                                                                                                                               )
                                                                                                                                              ),
                                                                                                                                     fluidRow(column(3, colourpicker::colourInput("color_heat1", "Set the color for the lowest value", "#09009D",
@@ -643,8 +670,6 @@ ui <- fluidPage(
                                                                                                                                     tags$hr(),
                                                                                                                                     fluidRow(column(3, selectInput("transfo_imputation", "Choose a data transformation",
                                                                                                                                                                    choices = c("Log2" = "log2", "None" = "none"), selected = "none")),
-                                                                                                                                             column(3, numericInput("iter_imputation", "Type a number of iteration to perform the imputation",
-                                                                                                                                                                    value = 3, step = 1, min = 1)),
                                                                                                                                              column(3, selectInput("method_imputation", "Choose a method for the imputation",
                                                                                                                                                                    choices = c("Replace NAs by zeros" = "zeros",
                                                                                                                                                                                "Predictive mean matching" = "pmm",
@@ -666,6 +691,10 @@ ui <- fluidPage(
                                                                                                                                                                    selected = "QRILC"
                                                                                                                                                                    )
                                                                                                                                                     ),
+                                                                                                                                             conditionalPanel(condition = "input.method_imputation != 'knn' & input.method_imputation != 'MinProb' & input.method_imputation != 'MinDet' & input.method_imputation != 'QRILC'",
+                                                                                                                                                              column(3, numericInput("iter_imputation", "Type a number of iteration to perform the imputation",
+                                                                                                                                                                                     value = 3, step = 1, min = 1))
+                                                                                                                                                              ),
                                                                                                                                              column(3, actionButton("goimputation_stat", "Start imputation", class = "btn-lg btn-primary"))
                                                                                                                                              ),
                                                                                                                                     tags$hr(),
@@ -696,7 +725,7 @@ ui <- fluidPage(
                                                                                                                                              column(3, selectInput("transfo_volcano", "Choose a data transformation",
                                                                                                                                                                    choices = c("Log2" = "log2", "None" = "none"), selected = "none")),
                                                                                                                                              conditionalPanel(condition = "!output.reportdata_up | input.choice_visu == 'dat'",
-                                                                                                                                                              column(3, textInput("nmid_volcano", "Type the name of the column that contains the IDs"))
+                                                                                                                                                              column(3, textInput("nmid_volcano", "Type the name of the column that contains the IDs", "id"))
                                                                                                                                                               )
                                                                                                                                              ),
                                                                                                                                     fluidRow(column(3, numericInput("fdr_volcano", "Choose an FDR", min = 0, max = 1, value = 0.01, step = 0.01)),
@@ -841,6 +870,51 @@ server <- function(input, output, session){
     return(!is.null(Report_data$d))
   })
   outputOptions(output, "reportdata_up", suspendWhenHidden = FALSE)
+
+  observe({
+    if(input$cont_prorsu_dat == "prefix"){
+      updateTextInput(session, "conta_dat", label = "Type the prefix indicating contaminants in the Protein.Group column")
+    }
+    else if(input$cont_prorsu_dat == "suffix"){
+      updateTextInput(session, "conta_dat", label = "Type the suffix indicating contaminants in the Protein.Group column")
+    }
+  })
+
+  observeEvent(input$rmconta_dat, {
+    conta_id <- input$conta_dat
+    if(input$cont_prorsu_dat == "prefix"){
+      conta_id <- paste0("^", conta_id)
+    }
+    else if(input$cont_prorsu_dat == "suffix"){
+      conta_id <- paste0(conta_id, "$")
+    }
+
+    if(!is.null(Report_data$d)){
+      showNotification("Removing contaminants", type = "message")
+      if("Protein.Group" %in% colnames(Report_data$d)){
+        conta_torm <- grep(conta_id, Report_data$d$Protein.Group)
+        if(length(conta_torm)){
+          n_conta_torm <- Report_data$d$Protein.Group[conta_torm]
+          n_conta_torm <- length(unique(n_conta_torm))
+          Report_data$d <- Report_data$d[-conta_torm,]
+          output$resconta_data <- renderUI({shiny::HTML(paste0("<span style='color:green;'>", n_conta_torm,
+                                                               " contaminants were removed successfully</span><br>")
+                                                        )
+            })
+        }
+        else{
+          output$resconta_data <- renderUI({shiny::HTML(paste0("<span style='color:red;'>No contaminants were found ! Check your ",
+                                                               input$cont_prorsu_dat, "</span><br>")
+                                                        )
+            })
+        }
+      }
+      else{
+        showNotification("Your report should contain the column 'Protein.Group' !",
+                         type = "error", duration = 6)
+      }
+    }
+  })
 
   output$df_report <- DT::renderDataTable({
     DT::datatable(Report_data$d,
@@ -1792,6 +1866,34 @@ server <- function(input, output, session){
       if(!is.null(df)){
         df <- as.data.frame(df)
         names(df)[1] <- "id"
+      }
+
+      if(input$keepingid_visu){
+        File <- input$idtokeep_visu
+        if(!is.null(File)){
+          ids <- as.data.frame(rio::import(File$datapath))
+          if(!("id" %in% colnames(ids))){
+            showNotification("Your list of ids doesn't contain the column id !
+                             Check your column names. No filtering has been performed.",
+                             type = "error", duration = 8)
+          }
+
+          if("significant" %in% colnames(ids)){
+            if(is.logical(ids$significant)){
+              showNotification("Only 'significant' ids were kept", type = "message")
+              ids <- ids[ids$significant,]
+            }
+          }
+
+          if(any(ids$id %in% df$id)){
+            df <- df[which(!is.na(match(df$id, ids$id))),]
+            if(any(!(ids$id %in% df$id))){
+              showNotification(paste(sum(!(ids$id %in% df$id)),
+                                     "ids weren't found in your data"),
+                               type = "warning", duration = 5)
+            }
+          }
+        }
       }
       df
     })
