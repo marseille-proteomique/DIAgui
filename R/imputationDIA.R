@@ -29,6 +29,12 @@ imputationDIA <- function(data, transformation = c("none", "log2"),
   if(LCMD){
     if(!("impute" %in% installed.packages())){
       message("Installing impute package from bioconductor")
+      if(!("BiocManager" %in% installed.packages())){
+        install.packages("BiocManager")
+      }
+      if(!("pcaMethods" %in% installed.packages())){
+        BiocManager::install("pcaMethods")
+      }
       BiocManager::install("impute")
     }
   }
