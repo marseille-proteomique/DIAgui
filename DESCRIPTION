@@ -39,6 +39,7 @@ Imports:
     ggrepel,
     ggpubr,
     stringr,
+    rio,
     Rcpp,
     RcppEigen,
     DT
