@@ -1893,6 +1893,10 @@ server <- function(input, output, session){
                                type = "warning", duration = 5)
             }
           }
+          else{
+            showNotification("No ids were found in your data !",
+                             type = "warning", duration = 5)
+          }
         }
       }
       df
