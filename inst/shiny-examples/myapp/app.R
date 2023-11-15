@@ -2563,7 +2563,9 @@ server <- function(input, output, session){
             showNotification("Your data are NULL ! Start the calculation for the data you selected
                          or import a file", type = "error")
           }
-          message("Done !")
+          if(!is.null(volc_ev$v)){
+            message("Done !")
+          }
         },
         message = function(m) {
           shinyjs::html(id = "info_volcano", html = paste(m$message, "<br>", sep = ""), add = FALSE)
