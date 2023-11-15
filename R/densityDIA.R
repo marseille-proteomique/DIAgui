@@ -106,7 +106,7 @@ densityDIA <- function(data, transformation = c("none", "log2"), area = FALSE,
   else{
     g <- ggplot2::ggplot(d, ggplot2::aes(intensity, color = fraction)) +
       ggplot2::geom_density() +
-      ggplot2::labs(title = paste0("Density plot", tit),
+      ggplot2::labs(title = tit,
            y = "Density",
            x = "Intensity",
            color = "Fraction") +
