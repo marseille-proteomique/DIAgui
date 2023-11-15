@@ -883,10 +883,10 @@ server <- function(input, output, session){
   observeEvent(input$rmconta_dat, {
     conta_id <- input$conta_dat
     if(input$cont_prorsu_dat == "prefix"){
-      conta_id <- paste0("^", conta_id)
+      conta_id <- paste0("(^|;)", conta_id)
     }
     else if(input$cont_prorsu_dat == "suffix"){
-      conta_id <- paste0(conta_id, "$")
+      conta_id <- paste0(conta_id, "(;|$)")
     }
 
     if(!is.null(Report_data$d)){
