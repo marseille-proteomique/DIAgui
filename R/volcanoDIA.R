@@ -39,6 +39,12 @@ volcanoDIA <- function(data, control, treated, id = NULL,
          )
   }
 
+  if(length(intersect(control, treated))){
+    message(paste("You put", paste(intersect(control, treated), collapse = ", "),
+                  "in the controls and the treated ! Returned NULL"))
+    return(NULL)
+  }
+
   check_num <- apply(data[,c(control, treated)], 2, class)
   if(!all(check_num == "numeric")){
     check_num <- names(check_num)[check_num != "numeric"]
