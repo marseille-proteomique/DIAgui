@@ -111,8 +111,8 @@ volcanoDIA <- function(data, control, treated, id = NULL,
   }
 
   volc <- mapply(function(ct, tr){
-                    mean_diff <- mean(ct - tr, na.rm = TRUE)
-                    pv <- tryCatch(t.test(ct, tr)$p.value,
+                    mean_diff <- mean(tr - ct, na.rm = TRUE)
+                    pv <- tryCatch(t.test(tr, ct)$p.value,
                                    error = function(e) NA)
 
                     res <- data.frame(FC = mean_diff, pv = pv);
