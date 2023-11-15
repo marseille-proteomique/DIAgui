@@ -1928,7 +1928,10 @@ server <- function(input, output, session){
       if(!is.null(visu_data())){
         df <- visu_data()
         to_rm <- str_which(colnames(df), "nbTrypticPeptides|peptides_counts_all|^pep_count_")
-        df <- df[,-to_rm]
+        if(length(to_rm)){
+          df <- df[,-to_rm]
+        }
+
         if(input$dtype_visu == "Top3"){
           df <- df[,str_which(colnames(df), "^Top3_")]
         }
@@ -1941,6 +1944,7 @@ server <- function(input, output, session){
             df <- df[,-idx]
           }
         }
+
         n <- lapply(df, class)
         n <- sum(n == "numeric")
         updateSliderInput(session, "maxna", max = n)
@@ -2025,7 +2029,10 @@ server <- function(input, output, session){
       if(!is.null(visu_data())){
         df <- visu_data()
         to_rm <- str_which(colnames(df), "nbTrypticPeptides|peptides_counts_all|^pep_count_")
-        df <- df[,-to_rm]
+        if(length(to_rm)){
+          df <- df[,-to_rm]
+        }
+
         if(input$dtype_visu == "Top3"){
           df <- df[,str_which(colnames(df), "^Top3_")]
         }
@@ -2158,7 +2165,10 @@ server <- function(input, output, session){
       if(!is.null(visu_data())){
         df <- visu_data()
         to_rm <- str_which(colnames(df), "nbTrypticPeptides|peptides_counts_all|^pep_count_")
-        df <- df[,-to_rm]
+        if(length(to_rm)){
+          df <- df[,-to_rm]
+        }
+
         if(input$dtype_visu == "Top3"){
           df <- df[,str_which(colnames(df), "^Top3_")]
         }
@@ -2261,16 +2271,15 @@ server <- function(input, output, session){
 
     ## PVV
     observe({
-      if(stringr::str_length(input$designPVV_visu) != 0){
-        updateSelectInput(session, "checkPVV_visu", choices = stringr::str_split(input$designPVV_visu, ",")[[1]])
-      }
+      updateSelectInput(session, "checkPVV_visu",
+                        choices = stringr::str_split(input$designPVV_visu, ",")[[1]])
     })
 
     pvv_ev <- reactiveValues(
       m = NULL
     )
     pvv <- reactive({
-      if(stringr::str_length(input$designPVV_visu) != 0){
+      if(nchar(input$designPVV_visu)){
         design <- stringr::str_split(input$designPVV_visu, ",")[[1]]
       }
       else{
@@ -2482,7 +2491,10 @@ server <- function(input, output, session){
       if(!is.null(visu_data())){
         df <- visu_data()
         to_rm <- str_which(colnames(df), "nbTrypticPeptides|peptides_counts_all|^pep_count_")
-        df <- df[,-to_rm]
+        if(length(to_rm)){
+          df <- df[,-to_rm]
+        }
+
         if(input$dtype_stat == "Top3"){
           df <- df[,str_which(colnames(df), "^Top3_")]
         }
