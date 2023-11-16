@@ -606,11 +606,18 @@ ui <- fluidPage(
                                                                                                                                                 To plot it, you'll need to import the report file.</h5>"),
                                                                                                                                     conditionalPanel(condition = "input.choice_visu == 'base'",
                                                                                                                                                      tags$hr(),
-                                                                                                                                                     fluidRow(column(4, actionButton("seert_visu", "See RT vs iRT", class = "btn-lg btn-primary"))
+                                                                                                                                                     fluidRow(column(4, checkboxInput("interactRT_visu", "Plot Interactive plot", FALSE)),
+                                                                                                                                                              column(4, actionButton("seert_visu", "See RT vs iRT", class = "btn-lg btn-primary"))
                                                                                                                                                      ),
                                                                                                                                                      tags$hr(),
-                                                                                                                                                     withSpinner(plotlyOutput("rt1_visu", height = "800px"), type = 6),
-                                                                                                                                                     withSpinner(plotlyOutput("rt2_visu", height = "800px"), type = 6)
+                                                                                                                                                     conditionalPanel(condition = "input.interactRT_visu",
+                                                                                                                                                                      withSpinner(plotlyOutput("rt1int_visu", height = "800px"), type = 6),
+                                                                                                                                                                      withSpinner(plotlyOutput("rt2int_visu", height = "800px"), type = 6)
+                                                                                                                                                                      ),
+                                                                                                                                                     conditionalPanel(condition = "!input.interactRT_visu",
+                                                                                                                                                                      withSpinner(plotOutput("rt1_visu", height = "800px"), type = 6),
+                                                                                                                                                                      withSpinner(plotOutput("rt2_visu", height = "800px"), type = 6)
+                                                                                                                                                                      )
                                                                                                                                                      ),
                                                                                                                                     conditionalPanel(condition = "input.choice_visu == 'dat'",
                                                                                                                                                      h3("You need to import the report file from DIA nn to use this tab.
@@ -2319,12 +2326,14 @@ server <- function(input, output, session){
     ## RT
     rt_ev <- reactiveValues(
       g = NULL,
-      f = NULL
+      f = NULL,
+      g_int = NULL,
+      f_int = NULL
     )
     rtg <- reactive({
       g <- ggplot(Report_data$d, aes(iRT, RT, label1 = Precursor.Id, label2 = Protein.Ids, label3 = Genes, color = PG.Q.Value)) +
         geom_point() + facet_wrap(~File.Name) + labs(title = "Report data") + theme(plot.title = element_text(hjust = 0.5))
-      ggplotly(g)
+      g
     })
     rtf <- reactive({
       d <- Report_data$d
@@ -2344,18 +2353,68 @@ server <- function(input, output, session){
       d <- d[d[[nm]] %in% visu_data()$id,]
       g <- ggplot(d, aes(iRT, RT, label1 = Precursor.Id, label2 = Protein.Ids, label3 = Genes, color = PG.Q.Value)) +
         geom_point() + facet_wrap(~File.Name) + labs(title = "Report data filtered") + theme(plot.title = element_text(hjust = 0.5))
-      ggplotly(g)
+      g
     })
     observeEvent(input$seert_visu, {
-       showNotification("Get rentention time plot", type = "message", duration = 4)
-       rt_ev$g <- rtg()
-       rt_ev$f <- rtf()
+      n <- nrow(Report_data$d)
+      if(n > 50000 & input$interactRT_visu){
+        showModal(
+          modalDialog(
+            title="Your report contains more than 50 000 rows, the interactive plot might be quite
+                   resource consuming and slow. Rstudio might crash...
+                   Are you sure you want to plot the interactive plot ?",
+            footer = tagList(actionButton("confirmInt", "Yes"),
+                             actionButton("noInt", "Show the static plot")
+            )
+          )
+        )
+      }
+      else{
+        showNotification("Get rentention time plot", type = "message", duration = 4)
+        if(input$interactRT_visu){
+          rt_ev$g_int <- rtg()
+          rt_ev$f_int <- rtf()
+          rt_ev$g <- NULL
+          rt_ev$f <- NULL
+        }
+        else{
+          rt_ev$g <- rtg()
+          rt_ev$f <- rtf()
+          rt_ev$g_int <- NULL
+          rt_ev$f_int <- NULL
+        }
+      }
     })
-    output$rt1_visu <- renderPlotly({
+
+    observeEvent(input$confirmInt,{
+      rt_ev$g_int <- rtg()
+      rt_ev$f_int <- rtf()
+      rt_ev$g <- NULL
+      rt_ev$f <- NULL
+      removeModal()
+    })
+    observeEvent(input$noInt,{
+      updateCheckboxInput(session, "interactRT_visu", value = FALSE)
+      rt_ev$g <- rtg()
+      rt_ev$f <- rtf()
+      rt_ev$g_int <- NULL
+      rt_ev$f_int <- NULL
+      removeModal()
+    })
+
+    output$rt1_visu <- renderPlot({
       rt_ev$g
     })
-    output$rt2_visu <- renderPlotly({
+    output$rt2_visu <- renderPlot({
       rt_ev$f
+    })
+
+
+    output$rt1int_visu <- renderPlotly({
+      rt_ev$g_int
+    })
+    output$rt2int_visu <- renderPlotly({
+      rt_ev$f_int
     })
 
     ## PROTEOTYPIC
