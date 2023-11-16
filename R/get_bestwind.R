@@ -2,21 +2,21 @@
 #'
 #' Get the best m/z windows for DIA according a number of window and the report-lib from DIA-nn.
 #'
-#' @param data The report-lib data from DIA-nn which contains the \emph{ProductMz} column.
+#' @param data The report-lib data from DIA-nn which contains the \emph{PrecursorMz} column.
 #'             It can be a path to the file or the dataframe corresponding to the file
-#'             (need to have \emph{FileName} and \emph{ProductMz} columns in that case).
+#'             (need to have \emph{FileName} and \emph{PrecursorMz} columns in that case).
 #' @param n_window The number of windows you want to have.
 #' @param per_frac If \code{FALSE}, will select the best windows from all fraction without differentiation.
 #'                 Else, it will select the best window for each fraction and then do the mean of those.
 #' @param window_size A fix m/z window size. Default is NULL but if numeric, it will compute n
 #'    windows of same size.
 #'
-#' @return A list containing a data frame with \emph{FileName}, \emph{ProductMz} and a \emph{bins} column;
-#'         four plots corresponding to bar plots / histogramm from the distribution of the \emph{ProductMz}
+#' @return A list containing a data frame with \emph{FileName}, \emph{PrecursorMz} and a \emph{bins} column;
+#'         four plots corresponding to bar plots / histogramm from the distribution of the \emph{PrecursorMz}
 #'         with and without the window selection.
 #'
 #' @details
-#' In the end, the distribution of the \emph{ProductMz} per window will be uniform.
+#' In the end, the distribution of the \emph{PrecursorMz} per window will be uniform.
 #'
 #' @export
 
@@ -31,25 +31,25 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE, window_size = NU
     }
   }
   data <- as.data.frame(data)
-  data <- data %>% dplyr::select(FileName, ProductMz)
+  data <- data %>% dplyr::select(FileName, PrecursorMz)
 
-  orig_hist <- ggplot2::ggplot(data, ggplot2::aes(x=ProductMz)) +
+  orig_hist <- ggplot2::ggplot(data, ggplot2::aes(x=PrecursorMz)) +
     ggplot2::geom_histogram(color="black", fill="white", bins = n_window)
-  orig_hist_frac <- ggplot2::ggplot(data, ggplot2::aes(x=ProductMz)) +
+  orig_hist_frac <- ggplot2::ggplot(data, ggplot2::aes(x=PrecursorMz)) +
     ggplot2::geom_histogram(color="black", fill="white", bins = n_window) +
     ggplot2::facet_wrap(~FileName)
 
-  data <- data[order(data$ProductMz),]
+  data <- data[order(data$PrecursorMz),]
 
   if(is.numeric(window_size)){
     window_size <- abs(window_size)
-    low <- floor(min(data$ProductMz, na.rm = TRUE))
-    up <- ceiling(max(data$ProductMz, na.rm = TRUE))
+    low <- floor(min(data$PrecursorMz, na.rm = TRUE))
+    up <- ceiling(max(data$PrecursorMz, na.rm = TRUE))
 
     config <- unique(c(seq(low, up, window_size), up))
     data$bins <- NA
     for(i in 1:(length(config) - 1)){
-      data$bins[which(data$ProductMz >= config[i] & data$ProductMz < config[i+1])] <- paste0(config[i], "-", config[i+1])
+      data$bins[which(data$PrecursorMz >= config[i] & data$PrecursorMz < config[i+1])] <- paste0(config[i], "-", config[i+1])
     }
   }
   else{
@@ -58,7 +58,7 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE, window_size = NU
       frac = unique(data$FileName)
       ### first get best windows for each fraction
       for(i in frac){
-        data_bis <- data %>% dplyr::select(FileName, ProductMz) %>%
+        data_bis <- data %>% dplyr::select(FileName, PrecursorMz) %>%
           dplyr::filter(FileName == i)
 
         n = nrow(data_bis)
@@ -105,7 +105,7 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE, window_size = NU
           else{
             dep = sum(config[1:(k-1)])
           }
-          val = data_bis$ProductMz[dep:sum(config[1:k])]
+          val = data_bis$PrecursorMz[dep:sum(config[1:k])]
           wind <- append(wind, round(min(val)))
         }
 
@@ -117,13 +117,13 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE, window_size = NU
       best_wind <- Reduce("+", best_wind)
       best_wind <- best_wind/n
       #get them
-      best_wind <- c(floor(min(data$ProductMz)), round(best_wind[-c(1, n_window+1)]), ceiling(max(data$ProductMz)))
+      best_wind <- c(floor(min(data$PrecursorMz)), round(best_wind[-c(1, n_window+1)]), ceiling(max(data$PrecursorMz)))
 
       data$bins <- rep(NA, n)
       for(i in 1:n_window){# write in the data
         down <- best_wind[i]
         up <- best_wind[i+1]
-        idx <- which(data$ProductMz >= down & data$ProductMz < up)
+        idx <- which(data$PrecursorMz >= down & data$PrecursorMz < up)
         data$bins[idx] <- paste0(down, "-", up)
       }
     }
@@ -173,7 +173,7 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE, window_size = NU
         else{
           dep = sum(config[1:(i-1)])
         }
-        val = data$ProductMz[dep:sum(config[1:i])]
+        val = data$PrecursorMz[dep:sum(config[1:i])]
         if(i == 1){
           data$bins[dep:sum(config[1:i])] <- paste0(floor(min(val)), "-", round(max(val)))
         }
@@ -205,4 +205,3 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE, window_size = NU
 
   return(res)
 }
-
