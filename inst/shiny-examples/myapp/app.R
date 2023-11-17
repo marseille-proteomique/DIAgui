@@ -777,15 +777,16 @@ ui <- fluidPage(
                                                                                                                                   "Select a fix window size" = "fix_size"),
                                                                                                       selected = "fix_bins", inline = TRUE),
                                                                                          fluidRow(conditionalPanel(condition = "input.fix_wsel == 'fix_bins'",
-                                                                                                                   column(4, numericInput("bins_wsel", "Select the number of windows you want to have",
+                                                                                                                   column(3, numericInput("bins_wsel", "Select the number of windows you want to have",
                                                                                                                                           25, min = 5, step = 1)),
-                                                                                                                   column(4, checkboxInput("perfrac_wsel", "Average the best windows from each fraction", FALSE))
+                                                                                                                   column(3, checkboxInput("perfrac_wsel", "Average the best windows from each fraction", FALSE))
                                                                                                                    ),
                                                                                                   conditionalPanel(condition = "input.fix_wsel == 'fix_size'",
-                                                                                                                   column(8, numericInput("windsize_wsel", "Select a fix m/z window size",
+                                                                                                                   column(6, numericInput("windsize_wsel", "Select a fix m/z window size",
                                                                                                                                           50, min = 0.1, step = 0.5))
                                                                                                                    ),
-                                                                                                  column(4, radioButtons("whichplot_wsel", "", choices = c("Visualize global distribution" = "all",
+                                                                                                  column(3, numericInput("overlap_wsel", "Overlap between windows", value = 0, min = 0, step = 0.5)),
+                                                                                                  column(3, radioButtons("whichplot_wsel", "", choices = c("Visualize global distribution" = "all",
                                                                                                                                                            "Visualize distribution from each fraction" = "frac"),
                                                                                                                          selected = "all"))
                                                                                                   ),
@@ -2711,7 +2712,7 @@ server <- function(input, output, session){
       withCallingHandlers({
         shinyjs::html("bstw_wsel", "")
         windsize_wsel <- ifelse(input$fix_wsel == "fix_size", input$windsize_wsel, "no")
-        get_bestwind(lib_data$d, n_window = input$bins_wsel,
+        get_bestwind(lib_data$d, n_window = input$bins_wsel, overlap = input$overlap_wsel,
                      per_frac = input$perfrac_wsel, window_size = windsize_wsel)
         },
       message = function(m) {
