@@ -8,6 +8,7 @@
 #' @param n_window The number of windows you want to have.
 #' @param per_frac If \code{FALSE}, will select the best windows from all fraction without differentiation.
 #'                 Else, it will select the best window for each fraction and then do the mean of those.
+#' @param overlap A fixed overlap between windows. Default is 0.
 #' @param window_size A fix m/z window size. Default is NULL but if numeric, it will compute n
 #'    windows of same size.
 #'
@@ -21,7 +22,7 @@
 #' @export
 
 get_bestwind <- function(data, n_window = 25, per_frac = FALSE,
-                         overlap = NULL, window_size = NULL){
+                         overlap = 0, window_size = NULL){
   if(inherits(data, "character")){
     if(stringr::str_detect(data, "\\.tsv$"))
       data <-  diann_load(data)
