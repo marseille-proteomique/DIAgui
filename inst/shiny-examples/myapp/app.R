@@ -2716,7 +2716,7 @@ server <- function(input, output, session){
                      per_frac = input$perfrac_wsel, window_size = windsize_wsel)
         },
       message = function(m) {
-        shinyjs::html(id = "bstw_wsel", html = paste(m$message, "<br>", sep = ""), add = FALSE)
+        shinyjs::html(id = "bstw_wsel", html = paste(m$message, "<br>", sep = ""), add = TRUE)
       }
       )
     })
