@@ -762,7 +762,7 @@ ui <- fluidPage(
                                                   tabPanel("Check other reports",
                                                            fluidRow(box(title = "Window selection", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                         shiny::HTML("<h5>In this tab, you'll need to upload the report-lib file from DIA-NN outputs.
-                                                                                    It needs to contain the columns named 'FileName' and 'ProductMz'.<br>
+                                                                                    It needs to contain the columns named 'FileName' and 'PrecursorMz'.<br>
                                                                                     The goal is to get the best m/z windows for DIA according a number
                                                                                     of window based on the report-lib data.
                                                                                     </h5>"),
