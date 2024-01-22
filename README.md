@@ -8,6 +8,10 @@ it is used for MaxLFQ algorithm. You can also use [iq](https://cran.r-project.or
 
 In addition to filter data and calculate MaxLFQ intensities, you can also get the Top3 and iBAQ quantification within the app.
 
+### Publication
+
+DOI: https://doi.org/10.1093/bioadv/vbae001 
+
 # How to install and use DIAgui ?
 
 ### Requirement
