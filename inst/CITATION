@@ -1,0 +1,11 @@
+bibentry(
+  bibtype  = "Article",
+  title    = "DIAgui: a Shiny application to process the output from DIA-NN",
+  author   = c(person("Marc-Antoine", "Gerault"),
+               person("Luc", "Camoin"),
+               person("Samuel", "Granjeaud")),
+  journal  = "Bioinformatics Advances",
+  year     = "2024",
+  volume   = "4",
+  doi      = "10.1093/bioadv/vbae001"
+)
