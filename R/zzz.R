@@ -2,7 +2,8 @@
   packageStartupMessage(
     "\n",
     "Welcome to DIAgui package! To launch the app, run runDIAgui() function.\n",
-    "To access the documentation, run browseVignettes(package = 'DIAgui').")
+    "To access the documentation, run browseVignettes(package = 'DIAgui').\n",
+    "Please cite this paper using citation('DIAgui')\n")
 
   WD <<- getwd()
   packageStartupMessage(
