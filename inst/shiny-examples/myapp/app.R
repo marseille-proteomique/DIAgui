@@ -100,6 +100,9 @@ ui <- fluidPage(
                                                                                      DT::dataTableOutput("reportdata_check_tab")
                                                                                      ),
                                                                     conditionalPanel(condition = "output.reportdata_check",
+                                                                                     htmlOutput("reportdata_check_text"),
+                                                                                     DT::dataTableOutput("reportdata_check_tab"),
+                                                                                     tags$hr(),
                                                                                      tags$u(h2("Rename your fractions")),
                                                                                      htmlOutput("frac_dat"),
                                                                                      tags$hr(),
@@ -150,22 +153,24 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your precursor file")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_prec", "Choose the q-value to filter the precursors",
+                                                                    fluidRow(column(3, numericInput("qv_prec", "Select the q-value to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_prec", "Choose the protein.q-value to filter the precursors",
+                                                                             column(3, numericInput("qvprot_prec", "Select the protein.q-value to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_prec", "Choose the protein-group q-value to filter the precursors",
+                                                                             column(3, numericInput("qvpg_prec", "Select the protein-group q-value to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_prec", "Choose the gene-groupe q-value to filter the precursors",
+                                                                             column(3, numericInput("qvgg_prec", "Select the gene-groupe q-value to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
-                                                                    fluidRow(column(3, checkboxInput("protypiconly_prec", "Proteotypic only", TRUE)),
+                                                                    fluidRow(column(3, numericInput("quality_prec", "Select the minimum quantity quality to filter the precursors",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8)),
+                                                                             column(3, checkboxInput("protypiconly_prec", "Proteotypic only", TRUE)),
                                                                              column(3, radioButtons("remmodif_prec", "",
                                                                                                     choices = c("Only keep modification selected" = "keep",
                                                                                                                 "Remove modifications selected" = "rem")
                                                                                                     )
                                                                                     ),
-                                                                             column(3, selectInput("modif_prec", "Choose some modifications (if NULL, no filtering)",
+                                                                             column(3, selectInput("modif_prec", "Select some modifications (if NULL, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
@@ -187,29 +192,31 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your peptide file")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_pep", "Choose the q-value to filter the peptides",
+                                                                    fluidRow(column(3, numericInput("qv_pep", "Select the q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_pep", "Choose the protein.q-value to filter the peptides",
+                                                                             column(3, numericInput("qvprot_pep", "Select the protein.q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_pep", "Choose the protein-group q-value to filter the peptides",
+                                                                             column(3, numericInput("qvpg_pep", "Select the protein-group q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_pep", "Choose the gene-groupe q-value to filter the peptides",
+                                                                             column(3, numericInput("qvgg_pep", "Select the gene-groupe q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
-                                                                    fluidRow(column(3, checkboxInput("protypiconly_pep", "Proteotypic only", TRUE)),
-                                                                             column(3, selectInput("centercol_pep", "Choose identifier to quantify",
+                                                                    fluidRow(column(3, numericInput("quality_pep", "Select the minimum quantity quality to filter the peptides",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8)),
+                                                                             column(3, checkboxInput("protypiconly_pep", "Proteotypic only", TRUE)),
+                                                                             column(3, selectInput("centercol_pep", "Choose the identifier to quantify",
                                                                                                    choices = c("Modified.Sequence", "Stripped.Sequence"),
                                                                                                    selected = "Stripped.Sequence")),
-                                                                             column(3, radioButtons("remmodif_pep", "",
+                                                                             column(3, checkboxInput("getPTM_pep", "Extract best PTM.Q.value", FALSE))
+                                                                             ),
+                                                                    fluidRow(column(3, radioButtons("remmodif_pep", "",
                                                                                                     choices = c("Only keep modification selected" = "keep",
                                                                                                                 "Remove modifications selected" = "rem")
                                                                                                     )
                                                                                     ),
-                                                                             column(3, selectInput("modif_pep", "Choose some modifications (if NULL, no filtering)",
+                                                                             column(3, selectInput("modif_pep", "Select some modifications (if NULL, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
-                                                                             ),
-                                                                    fluidRow(column(3, checkboxInput("getPTM_pep", "Extract best PTM.Q.value", FALSE))
                                                                              ),
                                                                     actionButton("go_pep", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
@@ -227,13 +234,13 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your peptide file using the MaxLFQ algorithm")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_peplfq", "Choose the q-value to filter the peptides",
+                                                                    fluidRow(column(3, numericInput("qv_peplfq", "Select the q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_peplfq", "Choose the protein.q-value to filter the peptides",
+                                                                             column(3, numericInput("qvprot_peplfq", "Select the protein.q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_peplfq", "Choose the protein-group q-value to filter the peptides",
+                                                                             column(3, numericInput("qvpg_peplfq", "Select the protein-group q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_peplfq", "Choose the gene-groupe q-value to filter the peptides",
+                                                                             column(3, numericInput("qvgg_peplfq", "Select the gene-groupe q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
                                                                     radioButtons("wLFQ_peplfq", "",
@@ -241,20 +248,22 @@ ui <- fluidPage(
                                                                                              "Use MaxLFQ from diann package" = "diann"),
                                                                                  selected = "iq",
                                                                                  inline = TRUE),
-                                                                    fluidRow(column(3, checkboxInput("protypiconly_peplfq", "Proteotypic only", TRUE)),
-                                                                             column(3, selectInput("centercol_peplfq", "Choose identifier to quantify",
+                                                                    fluidRow(column(3, numericInput("quality_peplfq", "Select the minimum quantity quality to filter the peptides",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8)),
+                                                                             column(3, checkboxInput("protypiconly_peplfq", "Proteotypic only", TRUE)),
+                                                                             column(3, selectInput("centercol_peplfq", "Choose the identifier to quantify",
                                                                                                    choices = c("Modified.Sequence", "Stripped.Sequence"),
                                                                                                    selected = "Modified.Sequence")),
-                                                                             column(3, radioButtons("remmodif_peplfq", "",
+                                                                             column(3, checkboxInput("getPTM_peplfq", "Extract best PTM.Q.value", FALSE))
+                                                                             ),
+                                                                    fluidRow(column(3, radioButtons("remmodif_peplfq", "",
                                                                                                     choices = c("Only keep modification selected" = "keep",
                                                                                                                 "Remove modifications selected" = "rem")
                                                                                                     )
                                                                                     ),
-                                                                             column(3, selectInput("modif_peplfq", "Choose some modifications (if NULL, no filtering)",
+                                                                             column(3, selectInput("modif_peplfq", "Select some modifications (if NULL, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
-                                                                             ),
-                                                                    fluidRow(column(3, checkboxInput("getPTM_peplfq", "Extract best PTM.Q.value", FALSE))
                                                                              ),
                                                                     actionButton("go_peplfq", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
@@ -282,14 +291,17 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your protein group file (will use the MaxLFQ algorithm)")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_pg", "Choose the q-value to filter the proteins",
+                                                                    fluidRow(column(3, numericInput("qv_pg", "Select the q-value to filter the proteins",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_pg", "Choose the protein.q-value to filter the proteins",
+                                                                             column(3, numericInput("qvprot_pg", "Select the protein.q-value to filter the proteins",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_pg", "Choose the protein-group q-value to filter the proteins",
+                                                                             column(3, numericInput("qvpg_pg", "Select the protein-group q-value to filter the proteins",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_pg", "Choose the gene-groupe q-value to filter the proteins",
+                                                                             column(3, numericInput("qvgg_pg", "Select the gene-groupe q-value to filter the proteins",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
+                                                                             ),
+                                                                    fluidRow(column(3, numericInput("quality_pg", "Select the minimum quantity quality to filter the proteins",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8))
                                                                              ),
                                                                     radioButtons("wLFQ_pg", "",
                                                                                  choices = c("Use fast MaxLFQ from iq package (log2 transformed)" = "iq",
@@ -307,21 +319,21 @@ ui <- fluidPage(
                                                                                                                       fileInput("fastafile_pg", "Import your FASTA files", multiple = TRUE),
                                                                                                                       ),
                                                                                                      conditionalPanel(condition = "!input.fasta_pg",
-                                                                                                                      selectizeInput("species_pg", "Choose a species",
+                                                                                                                      selectizeInput("species_pg", "Select a species",
                                                                                                                                      choices = NULL)
                                                                                                                       )
                                                                                                      ),
-                                                                                              column(4, sliderInput("peplen_pg", "Choose the min and max peptide length",
+                                                                                              column(4, sliderInput("peplen_pg", "Select the min and max peptide length",
                                                                                                                     min = 0, max = 100, value = c(5,36), step = 1)
                                                                                                      ),
-                                                                                              column(4, selectInput("enzyme_pg", "Choose an enzyme", choices = c("trypsin", "lys-c"), selected = "trypsin")
+                                                                                              column(4, selectInput("enzyme_pg", "Select an enzyme", choices = c("trypsin", "lys-c"), selected = "trypsin")
                                                                                                      )
                                                                                               ),
                                                                                      tags$hr(),
                                                                                      textOutput("diag_getseq"),
                                                                                      tags$hr(),
                                                                                      ),
-                                                                    fluidRow(column(3, selectInput("modif_pg", "Choose some modifications to remove (if none selected, no filtering)",
+                                                                    fluidRow(column(3, selectInput("modif_pg", "Select some modifications to remove (if none selected, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
@@ -344,20 +356,22 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your unique genes file")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_gg", "Choose the q-value to filter the genes",
+                                                                    fluidRow(column(3, numericInput("qv_gg", "Select the q-value to filter the genes",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_gg", "Choose the protein.q-value to filter the genes",
+                                                                             column(3, numericInput("qvprot_gg", "Select the protein.q-value to filter the genes",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_gg", "Choose the protein-group q-value to filter the genes",
+                                                                             column(3, numericInput("qvpg_gg", "Select the protein-group q-value to filter the genes",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_gg", "Choose the gene-groupe q-value to filter the genes",
+                                                                             column(3, numericInput("qvgg_gg", "Select the gene-groupe q-value to filter the genes",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
-                                                                    fluidRow(column(3, checkboxInput("onlycountall_gg", "Only keep peptides counts all", TRUE)),
+                                                                    fluidRow(column(3, numericInput("quality_gg", "Select the minimum quantity quality to filter the genes",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8)),
+                                                                             column(3, checkboxInput("onlycountall_gg", "Only keep peptides counts all", TRUE)),
                                                                              column(3, checkboxInput("protypiconly_gg", "Proteotypic only", TRUE)),
                                                                              column(3, checkboxInput("Top3_gg", "Get Top3 quantification", TRUE))
                                                                              ),
-                                                                    fluidRow(column(3, selectInput("modif_gg", "Choose some modifications to remove (if none selected, no filtering)",
+                                                                    fluidRow(column(3, selectInput("modif_gg", "Select some modifications to remove (if none selected, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
@@ -449,7 +463,7 @@ ui <- fluidPage(
                                                                                                                                                                                                 "Z-score on the fractions" = "z.score_fraction",
                                                                                                                                                                                                 "None" = "none"), selected = "none")),
                                                                                                                                                               column(3, checkboxInput("prval_visu", "Print values on blocks", FALSE)),
-                                                                                                                                                              column(3, sliderInput("maxna", "Choose the maximum number of missing values per rows",
+                                                                                                                                                              column(3, sliderInput("maxna", "Select the maximum number of missing values per rows",
                                                                                                                                                                                     value = 0, min = 0, step = 1, max = 3)),
                                                                                                                                                               conditionalPanel(condition = "!output.reportdata_up | input.choice_visu == 'dat'",
                                                                                                                                                                                column(3, textInput("nmid_visu", "Type the name of the column that contains the IDs", "id"))
@@ -494,7 +508,7 @@ ui <- fluidPage(
                                                                                                                                                               column(3, actionButton("seedens_visu", "See density plot", class = "btn-lg btn-primary"))
                                                                                                                                                               ),
                                                                                                                                                      tags$hr(),
-                                                                                                                                                     checkboxInput("isowncolor_dens", "Choose your own colors", FALSE),
+                                                                                                                                                     checkboxInput("isowncolor_dens", "Select your own colors", FALSE),
                                                                                                                                                      conditionalPanel(condition = "input.isowncolor_dens",
                                                                                                                                                                       uiOutput("owncolor_densui")
                                                                                                                                                                       ),
@@ -577,7 +591,7 @@ ui <- fluidPage(
                                                                                                                                                               column(4, actionButton("seemds_visu", "See MDS plot", class = "btn-lg btn-primary"))
                                                                                                                                                               ),
                                                                                                                                                      tags$hr(),
-                                                                                                                                                     checkboxInput("isowncolor_mds", "Choose your own colors", FALSE),
+                                                                                                                                                     checkboxInput("isowncolor_mds", "Select your own colors", FALSE),
                                                                                                                                                      conditionalPanel(condition = "input.isowncolor_mds",
                                                                                                                                                                       uiOutput("owncolor_mdsui")
                                                                                                                                                                       ),
@@ -611,7 +625,7 @@ ui <- fluidPage(
                                                                                                                                                      fluidRow(column(3, selectInput("transfoPVV_visu", "Choose a data transformation",
                                                                                                                                                                                     choices = c("Log2" = "log2",
                                                                                                                                                                                                 "None" = "none"), selected = "none"),
-                                                                                                                                                                     numericInput("propcutPVV_visu", "Choose the minimum proportion to show on the graph",
+                                                                                                                                                                     numericInput("propcutPVV_visu", "Select the minimum proportion to show on the graph",
                                                                                                                                                                                   value = 0, min = 0, max = 1, step = 0.05)),
                                                                                                                                                               column(3, textInput("titPVV_visu", "Choose a title for your plot (can be NULL)")),
                                                                                                                                                               column(3, textInput("designPVV_visu", "Type the design of your experiment that match your columns names,
@@ -721,7 +735,7 @@ ui <- fluidPage(
                                                                                                                                                      tags$hr(),
                                                                                                                                                      fluidRow(column(3, selectInput("transfo_imputation", "Choose a data transformation",
                                                                                                                                                                                     choices = c("Log2" = "log2", "None" = "none"), selected = "none")),
-                                                                                                                                                              column(3, selectInput("method_imputation", "Choose a method for the imputation",
+                                                                                                                                                              column(3, selectInput("method_imputation", "Select a method for the imputation",
                                                                                                                                                                                     choices = c("Replace NAs by zeros" = "zeros",
                                                                                                                                                                                                 "Predictive mean matching" = "pmm",
                                                                                                                                                                                                 "Weighted predictive mean matching" = "midastouch",
@@ -779,8 +793,8 @@ ui <- fluidPage(
                                                                                                                                                                                column(3, textInput("nmid_volcano", "Type the name of the column that contains the IDs", "id"))
                                                                                                                                                                                )
                                                                                                                                                               ),
-                                                                                                                                                     fluidRow(column(3, numericInput("fdr_volcano", "Choose an FDR", min = 0, max = 1, value = 0.01, step = 0.01)),
-                                                                                                                                                              column(3, numericInput("fccut_volcano", "Choose a fold change cutoff", min = 0, value = 2.5, step = 0.1)),
+                                                                                                                                                     fluidRow(column(3, numericInput("fdr_volcano", "Select an FDR", min = 0, max = 1, value = 0.01, step = 0.01)),
+                                                                                                                                                              column(3, numericInput("fccut_volcano", "Select a fold change cutoff", min = 0, value = 2.5, step = 0.1)),
                                                                                                                                                               column(3, textInput("tit_volcano", "Choose a title for your plot (can be NULL)")),
                                                                                                                                                               column(3, checkboxInput("savef_volcano", "Save results files", TRUE))
                                                                                                                                                               ),
@@ -1009,7 +1023,8 @@ server <- function(input, output, session){
                           "Q.Value" = "The global q-value",
                           "Protein.Q.Value" = "The protein q-value",
                           "PG.Q.Value" = "The protein group q-value",
-                          "GG.Q.Value"= "The gene group q-value")
+                          "GG.Q.Value"= "The gene group q-value",
+                          "Quantity.Quality" = "The quality of the quantification")
       needed <- names(needed_info)
       if(all(needed %in% cn)){
         reportdata_chek$x <- NULL
@@ -1018,21 +1033,36 @@ server <- function(input, output, session){
       }
       else{
         needed <- needed[!(needed %in% cn)]
+        needed_err <- needed
+        needed_war <- ""
         needed_info <- needed_info[needed]
 
-        needed <- paste0("The column", ifelse(length(needed) > 1, "s ", " "),
-                         paste0("'", needed, "'", collapse = ", "),
-                         ifelse(length(needed) > 1, " are", " is"),
-                         " missing in your report ! <br>
-                        Please check the spelling as you will not be able to fully use DIAgui package")
-        needed <- paste0("<span style='color:red;'>", needed, "</span><br><br>")
-        reportdata_chek$x <- needed
+        if("Quantity.Quality" %in% needed){
+          needed_err <- needed[-which(needed == "Quantity.Quality")]
+          needed_war <- paste0("<span style='color:orange;'>",
+                               "The column Quantity.Quality is missing in your report. The filter on quality will hence not be applied.",
+                               "</span><br><br>")
+        }
 
         needed_info <- t(data.frame(needed_info))
         colnames(needed_info) <- "description"
         needed_info <- as.data.frame(needed_info)
         reportdata_chek$t <- needed_info
-        return(FALSE)
+
+        if(length(needed_err)){
+          needed_err <- paste0("The column", ifelse(length(needed_err) > 1, "s ", " "),
+                               paste0("'", needed_err, "'", collapse = ", "),
+                               ifelse(length(needed_err) > 1, " are", " is"),
+                               " missing in your report ! <br>
+                        Please check the spelling as you will not be able to fully use DIAgui package")
+          needed_err <- paste0("<span style='color:red;'>", needed_err, "</span><br><br>")
+          reportdata_chek$x <- paste0(needed_err, needed_war)
+          return(FALSE)
+        }
+        else{
+          reportdata_chek$x <- needed_war
+          return(TRUE)
+        }
       }
     }
     else{
@@ -1256,6 +1286,7 @@ server <- function(input, output, session){
                         protein.q = input$qvprot_prec,
                         pg.q = input$qvpg_prec,
                         gg.q = input$qvgg_prec,
+                        quality = input$quality_prec,
                         method = "max")
     })
 
@@ -1337,6 +1368,7 @@ server <- function(input, output, session){
                         protein.q = input$qvprot_pep,
                         pg.q = input$qvpg_pep,
                         gg.q = input$qvgg_pep,
+                        quality = input$quality_pep,
                         method = "max")
 
       if(input$getPTM_pep){
@@ -1442,7 +1474,12 @@ server <- function(input, output, session){
       if(input$protypiconly_peplfq){
         df <- df[which(df[["Proteotypic"]] != 0), ]
       }
+
       df <- df %>% dplyr::filter(Q.Value <= input$qv_peplfq & PG.Q.Value <= input$qvpg_peplfq & Protein.Q.Value <= input$qvprot_peplfq & GG.Q.Value <= input$qvgg_peplfq)
+      if("Quantity.Quality" %in% colnames(df)){
+        df <- df[which(df$Quantity.Quality >= input$quality_peplfq),]
+      }
+
       if(input$wLFQ_peplfq == "diann"){
         d <- diann_maxlfq(df,
                           group.header = input$centercol_peplfq,
@@ -1626,6 +1663,11 @@ server <- function(input, output, session){
         df <- df[which(df[["Proteotypic"]] != 0), ]
       }
       df <- df %>% dplyr::filter(Q.Value <= input$qv_pg & PG.Q.Value <= input$qvpg_pg & Protein.Q.Value <= input$qvprot_pg & GG.Q.Value <= input$qvgg_pg)
+
+      if("Quantity.Quality" %in% colnames(df)){
+        df <- df[which(df$Quantity.Quality >= input$quality_pg),]
+      }
+
       n_cond <- length(unique(df$File.Name))
 
       if(input$wLFQ_pg == "diann"){
@@ -1746,6 +1788,7 @@ server <- function(input, output, session){
                              proteotypic.only = input$protypiconly_pg,
                              q = input$qv_pg, protein.q = input$qvprot_pg,
                              pg.q = input$qvpg_pg, gg.q = input$qvgg_pg,
+                             quality = input$quality_pg,
                              method = "sum")
         brut$Genes <- NULL
         brut$Protein.Names <- NULL
@@ -1837,6 +1880,7 @@ server <- function(input, output, session){
                    protein.q = input$qvprot_gg,
                    pg.q = input$qvpg_gg,
                    gg.q = input$qvgg_gg,
+                   quality = input$quality_gg,
                    get_pep = TRUE, only_pepall = input$onlycountall_gg,
                    Top3 = input$Top3_gg,
                    method = "max")
