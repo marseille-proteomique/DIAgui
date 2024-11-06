@@ -43,6 +43,11 @@ diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Prec
     dft <- dft[which(dft[["Quantity.Quality"]] >= quality),]
   }
 
+  if(nrow(dft) == 0){
+    message("The filters you selected returned an empty data.frame. Try to be less stringent.")
+    return()
+  }
+
   info <- c()
   if(id.header == "Precursor.Id" | id.header == "Stripped.Sequence" | id.header == "Modified.Sequence"){
     info <- c("Stripped.Sequence", "Modified.Sequence")
