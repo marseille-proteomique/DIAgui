@@ -1288,6 +1288,13 @@ server <- function(input, output, session){
                         gg.q = input$qvgg_prec,
                         quality = input$quality_prec,
                         method = "max")
+
+      if(is.null(d)){
+        message("<span style='color:red;'>The filters you selected returned an empty data.frame. Try to be less stringent.</span>")
+        return()
+      }
+
+      d
     })
 
     observeEvent(input$go_prec, {
@@ -1296,7 +1303,8 @@ server <- function(input, output, session){
         message("Calculation...")
         showNotification("Getting the precursors tab", type = "message", duration = 2)
         precu_ev$x <- precu()
-        message("Done !")
+        if(!is.null(precu()))
+          message("Done !")
       },
       message = function(m) {
         shinyjs::html(id = "info_prec", html = paste(m$message, "<br>", sep = ""), add = FALSE)
@@ -1370,6 +1378,10 @@ server <- function(input, output, session){
                         gg.q = input$qvgg_pep,
                         quality = input$quality_pep,
                         method = "max")
+      if(is.null(d)){
+        message("<span style='color:red;'>The filters you selected returned an empty data.frame. Try to be less stringent.</span>")
+        return()
+      }
 
       if(input$getPTM_pep){
         if(all(c("PTM.Q.Value", "PTM.Site.Confidence","Lib.PTM.Site.Confidence") %in% colnames(df))){
@@ -1405,7 +1417,8 @@ server <- function(input, output, session){
           message("Calculation...")
           showNotification("Getting the peptides tab", type = "message", duration = 2)
           pep_ev$x <- pep()
-          message("Done !")
+          if(!is.null(pep()))
+            message("Done !")
         }
       },
       message = function(m) {
@@ -1476,8 +1489,17 @@ server <- function(input, output, session){
       }
 
       df <- df %>% dplyr::filter(Q.Value <= input$qv_peplfq & PG.Q.Value <= input$qvpg_peplfq & Protein.Q.Value <= input$qvprot_peplfq & GG.Q.Value <= input$qvgg_peplfq)
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The p-value filtering returned an empty data.frame. Try increasing the minimum p-values.</span>")
+        return()
+      }
+
       if("Quantity.Quality" %in% colnames(df)){
         df <- df[which(df$Quantity.Quality >= input$quality_peplfq),]
+      }
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The quantity quality filtering returned an empty data.frame. Try decreasing the minimum quality.</span>")
+        return()
       }
 
       if(input$wLFQ_peplfq == "diann"){
@@ -1578,7 +1600,8 @@ server <- function(input, output, session){
           message("Calculation...")
           showNotification(paste("Getting the peptides tab using the MaxLFQ algorithm from", input$wLFQ_peplfq, "package"), type = "message")
           peplfq_ev$x <- peplfq()
-          message("Done !")
+          if(!is.null(peplfq()))
+            message("Done !")
         }
       },
       message = function(m) {
@@ -1664,8 +1687,16 @@ server <- function(input, output, session){
       }
       df <- df %>% dplyr::filter(Q.Value <= input$qv_pg & PG.Q.Value <= input$qvpg_pg & Protein.Q.Value <= input$qvprot_pg & GG.Q.Value <= input$qvgg_pg)
 
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The p-value filtering returned an empty data.frame. Try increasing the minimum p-values.</span>")
+        return()
+      }
       if("Quantity.Quality" %in% colnames(df)){
         df <- df[which(df$Quantity.Quality >= input$quality_pg),]
+      }
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The quantity quality filtering returned an empty data.frame. Try decreasing the minimum quality.</span>")
+        return()
       }
 
       n_cond <- length(unique(df$File.Name))
@@ -1813,7 +1844,8 @@ server <- function(input, output, session){
         message("Calculation...")
         showNotification(paste("Getting the protein group tab using the MaxLFQ algorithm from", input$wLFQ_peplfq, "package"), type = "message")
         pg_ev$x <- pg()
-        message("Done !")
+        if(!is.null(pg()))
+          message("Done !")
       },
       message = function(m) {
         shinyjs::html(id = "info_pg", html = paste(m$message, "<br>", sep = ""), add = FALSE)
@@ -1884,14 +1916,22 @@ server <- function(input, output, session){
                    get_pep = TRUE, only_pepall = input$onlycountall_gg,
                    Top3 = input$Top3_gg,
                    method = "max")
+
+      if(is.null(d)){
+        message("<span style='color:red;'>The filters you selected returned an empty data.frame. Try to be less stringent.</span>")
+        return()
+      }
+
+      d
     })
     observeEvent(input$go_gg, {
       withCallingHandlers({
         shinyjs::html("info_gg", "")
         message("Calculation...")
-      showNotification("Getting the unique genes tab", type = "message", duration = 2)
-      gg_ev$x <- gg()
-      message("Done !")
+        showNotification("Getting the unique genes tab", type = "message", duration = 2)
+        gg_ev$x <- gg()
+        if(!is.null(gg()))
+          message("Done !")
       },
       message = function(m) {
         shinyjs::html(id = "info_gg", html = paste(m$message, "<br>", sep = ""), add = FALSE)
