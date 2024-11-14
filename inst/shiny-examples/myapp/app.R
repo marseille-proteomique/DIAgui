@@ -1803,9 +1803,9 @@ server <- function(input, output, session){
           }
           else{
             showNotification("You didn't upload any FASTA files !
-                             Upload one or uncheck the 'FATSA' option to search with swissprot bank",
+                             Upload one or uncheck the 'FASTA' option to search with swissprot bank",
                              type = "error")
-            message("You didn't upload any FASTA files ! Upload one or uncheck the 'FATSA' option to search with swissprot bank")
+            message("You didn't upload any FASTA files ! Upload one or uncheck the 'FASTA' option to search with swissprot bank")
             return(NULL)
           }
         }
