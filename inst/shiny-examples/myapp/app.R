@@ -103,6 +103,9 @@ ui <- fluidPage(
                                                                                      DT::dataTableOutput("reportdata_check_tab")
                                                                                      ),
                                                                     conditionalPanel(condition = "output.reportdata_check",
+                                                                                     htmlOutput("reportdata_check_text"),
+                                                                                     DT::dataTableOutput("reportdata_check_tab"),
+                                                                                     tags$hr(),
                                                                                      tags$u(h2("Rename your fractions")),
                                                                                      htmlOutput("frac_dat"),
                                                                                      tags$hr(),
@@ -153,22 +156,24 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your precursor file")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_prec", "Choose the q-value to filter the precursors",
+                                                                    fluidRow(column(3, numericInput("qv_prec", "Select the q-value to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_prec", "Choose the protein.q-value to filter the precursors",
+                                                                             column(3, numericInput("qvprot_prec", "Select the protein.q-value to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_prec", "Choose the protein-group q-value to filter the precursors",
+                                                                             column(3, numericInput("qvpg_prec", "Select the protein-group q-value to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_prec", "Choose the gene-groupe q-value to filter the precursors",
+                                                                             column(3, numericInput("qvgg_prec", "Select the gene-groupe q-value to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
-                                                                    fluidRow(column(3, checkboxInput("protypiconly_prec", "Proteotypic only", TRUE)),
+                                                                    fluidRow(column(3, numericInput("quality_prec", "Select the minimum quantity quality to filter the precursors",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8)),
+                                                                             column(3, checkboxInput("protypiconly_prec", "Proteotypic only", TRUE)),
                                                                              column(3, radioButtons("remmodif_prec", "",
                                                                                                     choices = c("Only keep modification selected" = "keep",
                                                                                                                 "Remove modifications selected" = "rem")
                                                                                                     )
                                                                                     ),
-                                                                             column(3, selectInput("modif_prec", "Choose some modifications (if NULL, no filtering)",
+                                                                             column(3, selectInput("modif_prec", "Select some modifications (if NULL, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
@@ -190,29 +195,31 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your peptide file")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_pep", "Choose the q-value to filter the peptides",
+                                                                    fluidRow(column(3, numericInput("qv_pep", "Select the q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_pep", "Choose the protein.q-value to filter the peptides",
+                                                                             column(3, numericInput("qvprot_pep", "Select the protein.q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_pep", "Choose the protein-group q-value to filter the peptides",
+                                                                             column(3, numericInput("qvpg_pep", "Select the protein-group q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_pep", "Choose the gene-groupe q-value to filter the peptides",
+                                                                             column(3, numericInput("qvgg_pep", "Select the gene-groupe q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
-                                                                    fluidRow(column(3, checkboxInput("protypiconly_pep", "Proteotypic only", TRUE)),
-                                                                             column(3, selectInput("centercol_pep", "Choose identifier to quantify",
+                                                                    fluidRow(column(3, numericInput("quality_pep", "Select the minimum quantity quality to filter the peptides",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8)),
+                                                                             column(3, checkboxInput("protypiconly_pep", "Proteotypic only", TRUE)),
+                                                                             column(3, selectInput("centercol_pep", "Choose the identifier to quantify",
                                                                                                    choices = c("Modified.Sequence", "Stripped.Sequence"),
                                                                                                    selected = "Stripped.Sequence")),
-                                                                             column(3, radioButtons("remmodif_pep", "",
+                                                                             column(3, checkboxInput("getPTM_pep", "Extract best PTM.Q.value", FALSE))
+                                                                             ),
+                                                                    fluidRow(column(3, radioButtons("remmodif_pep", "",
                                                                                                     choices = c("Only keep modification selected" = "keep",
                                                                                                                 "Remove modifications selected" = "rem")
                                                                                                     )
                                                                                     ),
-                                                                             column(3, selectInput("modif_pep", "Choose some modifications (if NULL, no filtering)",
+                                                                             column(3, selectInput("modif_pep", "Select some modifications (if NULL, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
-                                                                             ),
-                                                                    fluidRow(column(3, checkboxInput("getPTM_pep", "Extract best PTM.Q.value", FALSE))
                                                                              ),
                                                                     actionButton("go_pep", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
@@ -230,13 +237,13 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your peptide file using the MaxLFQ algorithm")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_peplfq", "Choose the q-value to filter the peptides",
+                                                                    fluidRow(column(3, numericInput("qv_peplfq", "Select the q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_peplfq", "Choose the protein.q-value to filter the peptides",
+                                                                             column(3, numericInput("qvprot_peplfq", "Select the protein.q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_peplfq", "Choose the protein-group q-value to filter the peptides",
+                                                                             column(3, numericInput("qvpg_peplfq", "Select the protein-group q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_peplfq", "Choose the gene-groupe q-value to filter the peptides",
+                                                                             column(3, numericInput("qvgg_peplfq", "Select the gene-groupe q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
                                                                     radioButtons("wLFQ_peplfq", "",
@@ -244,20 +251,22 @@ ui <- fluidPage(
                                                                                              "Use MaxLFQ from diann package" = "diann"),
                                                                                  selected = "iq",
                                                                                  inline = TRUE),
-                                                                    fluidRow(column(3, checkboxInput("protypiconly_peplfq", "Proteotypic only", TRUE)),
-                                                                             column(3, selectInput("centercol_peplfq", "Choose identifier to quantify",
+                                                                    fluidRow(column(3, numericInput("quality_peplfq", "Select the minimum quantity quality to filter the peptides",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8)),
+                                                                             column(3, checkboxInput("protypiconly_peplfq", "Proteotypic only", TRUE)),
+                                                                             column(3, selectInput("centercol_peplfq", "Choose the identifier to quantify",
                                                                                                    choices = c("Modified.Sequence", "Stripped.Sequence"),
                                                                                                    selected = "Modified.Sequence")),
-                                                                             column(3, radioButtons("remmodif_peplfq", "",
+                                                                             column(3, checkboxInput("getPTM_peplfq", "Extract best PTM.Q.value", FALSE))
+                                                                             ),
+                                                                    fluidRow(column(3, radioButtons("remmodif_peplfq", "",
                                                                                                     choices = c("Only keep modification selected" = "keep",
                                                                                                                 "Remove modifications selected" = "rem")
                                                                                                     )
                                                                                     ),
-                                                                             column(3, selectInput("modif_peplfq", "Choose some modifications (if NULL, no filtering)",
+                                                                             column(3, selectInput("modif_peplfq", "Select some modifications (if NULL, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
-                                                                             ),
-                                                                    fluidRow(column(3, checkboxInput("getPTM_peplfq", "Extract best PTM.Q.value", FALSE))
                                                                              ),
                                                                     actionButton("go_peplfq", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
@@ -285,14 +294,17 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your protein group file (will use the MaxLFQ algorithm)")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_pg", "Choose the q-value to filter the proteins",
+                                                                    fluidRow(column(3, numericInput("qv_pg", "Select the q-value to filter the proteins",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_pg", "Choose the protein.q-value to filter the proteins",
+                                                                             column(3, numericInput("qvprot_pg", "Select the protein.q-value to filter the proteins",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_pg", "Choose the protein-group q-value to filter the proteins",
+                                                                             column(3, numericInput("qvpg_pg", "Select the protein-group q-value to filter the proteins",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_pg", "Choose the gene-groupe q-value to filter the proteins",
+                                                                             column(3, numericInput("qvgg_pg", "Select the gene-groupe q-value to filter the proteins",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
+                                                                             ),
+                                                                    fluidRow(column(3, numericInput("quality_pg", "Select the minimum quantity quality to filter the proteins",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8))
                                                                              ),
                                                                     radioButtons("wLFQ_pg", "",
                                                                                  choices = c("Use fast MaxLFQ from iq package (log2 transformed)" = "iq",
@@ -310,21 +322,21 @@ ui <- fluidPage(
                                                                                                                       fileInput("fastafile_pg", "Import your FASTA files", multiple = TRUE),
                                                                                                                       ),
                                                                                                      conditionalPanel(condition = "!input.fasta_pg",
-                                                                                                                      selectizeInput("species_pg", "Choose a species",
+                                                                                                                      selectizeInput("species_pg", "Select a species",
                                                                                                                                      choices = NULL)
                                                                                                                       )
                                                                                                      ),
-                                                                                              column(4, sliderInput("peplen_pg", "Choose the min and max peptide length",
+                                                                                              column(4, sliderInput("peplen_pg", "Select the min and max peptide length",
                                                                                                                     min = 0, max = 100, value = c(5,36), step = 1)
                                                                                                      ),
-                                                                                              column(4, selectInput("enzyme_pg", "Choose an enzyme", choices = c("trypsin", "lys-c"), selected = "trypsin")
+                                                                                              column(4, selectInput("enzyme_pg", "Select an enzyme", choices = c("trypsin", "lys-c"), selected = "trypsin")
                                                                                                      )
                                                                                               ),
                                                                                      tags$hr(),
                                                                                      textOutput("diag_getseq"),
                                                                                      tags$hr(),
                                                                                      ),
-                                                                    fluidRow(column(3, selectInput("modif_pg", "Choose some modifications to remove (if none selected, no filtering)",
+                                                                    fluidRow(column(3, selectInput("modif_pg", "Select some modifications to remove (if none selected, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
@@ -347,20 +359,22 @@ ui <- fluidPage(
                                                                     tags$u(h3("Get your unique genes file")),
                                                                     tags$hr(),
 
-                                                                    fluidRow(column(3, numericInput("qv_gg", "Choose the q-value to filter the genes",
+                                                                    fluidRow(column(3, numericInput("qv_gg", "Select the q-value to filter the genes",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvprot_gg", "Choose the protein.q-value to filter the genes",
+                                                                             column(3, numericInput("qvprot_gg", "Select the protein.q-value to filter the genes",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1)),
-                                                                             column(3, numericInput("qvpg_gg", "Choose the protein-group q-value to filter the genes",
+                                                                             column(3, numericInput("qvpg_gg", "Select the protein-group q-value to filter the genes",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
-                                                                             column(3, numericInput("qvgg_gg", "Choose the gene-groupe q-value to filter the genes",
+                                                                             column(3, numericInput("qvgg_gg", "Select the gene-groupe q-value to filter the genes",
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
-                                                                    fluidRow(column(3, checkboxInput("onlycountall_gg", "Only keep peptides counts all", TRUE)),
+                                                                    fluidRow(column(3, numericInput("quality_gg", "Select the minimum quantity quality to filter the genes",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8)),
+                                                                             column(3, checkboxInput("onlycountall_gg", "Only keep peptides counts all", TRUE)),
                                                                              column(3, checkboxInput("protypiconly_gg", "Proteotypic only", TRUE)),
                                                                              column(3, checkboxInput("Top3_gg", "Get Top3 quantification", TRUE))
                                                                              ),
-                                                                    fluidRow(column(3, selectInput("modif_gg", "Choose some modifications to remove (if none selected, no filtering)",
+                                                                    fluidRow(column(3, selectInput("modif_gg", "Select some modifications to remove (if none selected, no filtering)",
                                                                                                    choices = "",
                                                                                                    multiple = TRUE))
                                                                              ),
@@ -427,7 +441,7 @@ ui <- fluidPage(
                                                                          )
                                                                      ),
 
-                                                            conditionalPanel(condition = "output.visudata_up",
+                                                            conditionalPanel(condition = "(output.reportdata_up & output.reportdata_check) | output.visudata_up",
                                                                              tabsetPanel(type = 'tabs',
                                                                                          tabPanel("Visualization",
                                                                                                   fluidRow(box(title = "Visualization", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
@@ -444,35 +458,42 @@ ui <- fluidPage(
                                                                                                                                                 on the button 'autoscale' on the right corner fo the plot. Also, you can select
                                                                                                                                                 to save this heatmap as an html file to preserve its interactive features or
                                                                                                                                                 save it as a png or pdf file.</h5>"),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    fluidRow(column(3, selectInput("transfo_visu", "Choose a data transformation",
-                                                                                                                                                                   choices = c("Log2" = "log2",
-                                                                                                                                                                               "Z-score on the proteins" = "z.score_protein",
-                                                                                                                                                                               "Z-score on the fractions" = "z.score_fraction",
-                                                                                                                                                                               "None" = "none"), selected = "none")),
-                                                                                                                                             column(3, checkboxInput("prval_visu", "Print values on blocks", FALSE)),
-                                                                                                                                             column(3, sliderInput("maxna", "Choose the maximum number of missing values per rows",
-                                                                                                                                                                   value = 0, min = 0, step = 1, max = 3)),
-                                                                                                                                             conditionalPanel(condition = "!output.reportdata_up | input.choice_visu == 'dat'",
-                                                                                                                                                              column(3, textInput("nmid_visu", "Type the name of the column that contains the IDs", "id"))
-                                                                                                                                                              )
-                                                                                                                                             ),
-                                                                                                                                    fluidRow(column(3, colourpicker::colourInput("color_heat1", "Set the color for the lowest value", "#09009D",
-                                                                                                                                                                                 allowTransparent = TRUE, closeOnClick = TRUE)),
-                                                                                                                                             column(3, colourpicker::colourInput("color_heat2", "Set the color for the middle value", "#ffffff",
-                                                                                                                                                                                 allowTransparent = TRUE, closeOnClick = TRUE)),
-                                                                                                                                             column(3, colourpicker::colourInput("color_heat3", "Set the color for the highest value", "#BE0010",
-                                                                                                                                                                                 allowTransparent = TRUE, closeOnClick = TRUE)),
-                                                                                                                                             column(3, actionButton("seeheat_visu", "See heatmap", class = "btn-lg btn-primary"))
-                                                                                                                                             ),
+                                                                                                                                    conditionalPanel(condition = "output.visudata_up",
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     fluidRow(column(3, selectInput("transfo_visu", "Choose a data transformation",
+                                                                                                                                                                                    choices = c("Log2" = "log2",
+                                                                                                                                                                                                "Z-score on the proteins" = "z.score_protein",
+                                                                                                                                                                                                "Z-score on the fractions" = "z.score_fraction",
+                                                                                                                                                                                                "None" = "none"), selected = "none")),
+                                                                                                                                                              column(3, checkboxInput("prval_visu", "Print values on blocks", FALSE)),
+                                                                                                                                                              column(3, sliderInput("maxna", "Select the maximum number of missing values per rows",
+                                                                                                                                                                                    value = 0, min = 0, step = 1, max = 3)),
+                                                                                                                                                              conditionalPanel(condition = "!output.reportdata_up | input.choice_visu == 'dat'",
+                                                                                                                                                                               column(3, textInput("nmid_visu", "Type the name of the column that contains the IDs", "id"))
+                                                                                                                                                                               )
+                                                                                                                                                              ),
+                                                                                                                                                     fluidRow(column(3, colourpicker::colourInput("color_heat1", "Set the color for the lowest value", "#09009D",
+                                                                                                                                                                                                  allowTransparent = TRUE, closeOnClick = TRUE)),
+                                                                                                                                                              column(3, colourpicker::colourInput("color_heat2", "Set the color for the middle value", "#ffffff",
+                                                                                                                                                                                                  allowTransparent = TRUE, closeOnClick = TRUE)),
+                                                                                                                                                              column(3, colourpicker::colourInput("color_heat3", "Set the color for the highest value", "#BE0010",
+                                                                                                                                                                                                  allowTransparent = TRUE, closeOnClick = TRUE)),
+                                                                                                                                                              column(3, actionButton("seeheat_visu", "See heatmap", class = "btn-lg btn-primary"))
+                                                                                                                                                              ),
 
-                                                                                                                                    tags$hr(),
-                                                                                                                                    withSpinner(plotlyOutput("heat_visu", height = "800px"), type = 6),
-                                                                                                                                    fluidRow(column(4, downloadButton("heat_visu_down", "Download heatmap")),
-                                                                                                                                             column(4, selectInput("heat_visu_format", "Select a format",
-                                                                                                                                                                   choices = c("png", "pdf", "html"), selected = "png")),
-                                                                                                                                             column(4, numericInput("heat_visu_dpi", "Resolution", min = 5, value = 300))
-                                                                                                                                             )
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     withSpinner(plotlyOutput("heat_visu", height = "800px"), type = 6),
+                                                                                                                                                     fluidRow(column(4, downloadButton("heat_visu_down", "Download heatmap")),
+                                                                                                                                                              column(4, selectInput("heat_visu_format", "Select a format",
+                                                                                                                                                                                    choices = c("png", "pdf", "html"), selected = "png")),
+                                                                                                                                                              column(4, numericInput("heat_visu_dpi", "Resolution", min = 5, value = 300))
+                                                                                                                                                              )
+                                                                                                                                                     ),
+                                                                                                                                    conditionalPanel(condition = "!output.visudata_up",
+                                                                                                                                                     h3("To perform this data visualization you need processed data.
+                                                                                                                                                         Either go back the 'Peptides and precursors' or 'Protein group and genes' tabs or import data
+                                                                                                                                                         by selecting the 'Import your own data' option above.")
+                                                                                                                                                     )
                                                                                                                                     ),
                                                                                                                            tabPanel("Density",
                                                                                                                                     tags$hr(),
@@ -480,25 +501,32 @@ ui <- fluidPage(
                                                                                                                                                 You can choose to plot the density from the obtained intensity, the iBAQ,
                                                                                                                                                 Top3 or all on the same plot.
                                                                                                                                                 You can specify your own colors and save it as a png or pdf file.</h5>"),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    fluidRow(column(3, selectInput("transfoD_visu", "Choose a data transformation",
-                                                                                                                                                                   choices = c("Log2" = "log2",
-                                                                                                                                                                               "None" = "none"), selected = "none")),
-                                                                                                                                             column(3, checkboxInput("area_visu", "Print area of the density curves", TRUE)),
-                                                                                                                                             column(3, textInput("titD_visu", "Choose a title for your plot (can be NULL)")),
-                                                                                                                                             column(3, actionButton("seedens_visu", "See density plot", class = "btn-lg btn-primary"))
-                                                                                                                                             ),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    checkboxInput("isowncolor_dens", "Choose your own colors", FALSE),
-                                                                                                                                    conditionalPanel(condition = "input.isowncolor_dens",
-                                                                                                                                                     uiOutput("owncolor_densui")
+                                                                                                                                    conditionalPanel(condition = "output.visudata_up",
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     fluidRow(column(3, selectInput("transfoD_visu", "Choose a data transformation",
+                                                                                                                                                                                    choices = c("Log2" = "log2",
+                                                                                                                                                                                                "None" = "none"), selected = "none")),
+                                                                                                                                                              column(3, checkboxInput("area_visu", "Print area of the density curves", TRUE)),
+                                                                                                                                                              column(3, textInput("titD_visu", "Choose a title for your plot (can be NULL)")),
+                                                                                                                                                              column(3, actionButton("seedens_visu", "See density plot", class = "btn-lg btn-primary"))
+                                                                                                                                                              ),
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     checkboxInput("isowncolor_dens", "Select your own colors", FALSE),
+                                                                                                                                                     conditionalPanel(condition = "input.isowncolor_dens",
+                                                                                                                                                                      uiOutput("owncolor_densui")
+                                                                                                                                                                      ),
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     withSpinner(plotOutput("dens_visu", height = "800px"), type = 6),
+                                                                                                                                                     fluidRow(column(4, downloadButton("down_dens", "Download density plot")),
+                                                                                                                                                              column(4, selectInput("down_dens_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
+                                                                                                                                                              column(4, numericInput("down_dens_dpi", "Resolution", min = 5, value = 300))
+                                                                                                                                                              )
                                                                                                                                                      ),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    withSpinner(plotOutput("dens_visu", height = "800px"), type = 6),
-                                                                                                                                    fluidRow(column(4, downloadButton("down_dens", "Download density plot")),
-                                                                                                                                             column(4, selectInput("down_dens_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
-                                                                                                                                             column(4, numericInput("down_dens_dpi", "Resolution", min = 5, value = 300))
-                                                                                                                                             )
+                                                                                                                                    conditionalPanel(condition = "!output.visudata_up",
+                                                                                                                                                     h3("To perform this data visualization you need processed data.
+                                                                                                                                                         Either go back the 'Peptides and precursors' or 'Protein group and genes' tabs or import data
+                                                                                                                                                         by selecting the 'Import your own data' option above.")
+                                                                                                                                                     )
                                                                                                                                     ),
                                                                                                                            tabPanel("Correlation",
                                                                                                                                     tags$hr(),
@@ -511,31 +539,38 @@ ui <- fluidPage(
                                                                                                                                                 On the diagonale, the density plot from each condition will be plotted. <br>
                                                                                                                                                 You can specify your own colors for the correlation matrix plot
                                                                                                                                                 and save it as a png or pdf file.</h5>"),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    fluidRow(column(3, selectInput("transfoCor_visu", "Choose a data transformation",
-                                                                                                                                                                   choices = c("Log2" = "log2",
-                                                                                                                                                                               "None" = "none"), selected = "none")),
-                                                                                                                                             column(3, checkboxInput("pairsCor_visu", "Plot pairwise correlation plot (if FALSE, will plot correlation matrix plot)", FALSE)),
-                                                                                                                                             column(3, textInput("titCor_visu", "Choose a title for your plot (can be NULL)")),
-                                                                                                                                             column(3, actionButton("seeCor_visu", "See correlation plot", class = "btn-lg btn-primary"))
-                                                                                                                                             ),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    conditionalPanel(condition = "!input.pairsCor_visu",
-                                                                                                                                                     fluidRow(column(4, colourpicker::colourInput("color_cor1", "Set the color for the lowest value", "#09009D",
-                                                                                                                                                                                                  allowTransparent = TRUE, closeOnClick = TRUE)),
-                                                                                                                                                              column(4, colourpicker::colourInput("color_cor2", "Set the color for the middle value", "#ffffff",
-                                                                                                                                                                                                  allowTransparent = TRUE, closeOnClick = TRUE)),
-                                                                                                                                                              column(4, colourpicker::colourInput("color_cor3", "Set the color for the highest value", "#BE0010",
-                                                                                                                                                                                                  allowTransparent = TRUE, closeOnClick = TRUE))
+                                                                                                                                    conditionalPanel(condition = "output.visudata_up",
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     fluidRow(column(3, selectInput("transfoCor_visu", "Choose a data transformation",
+                                                                                                                                                                                    choices = c("Log2" = "log2",
+                                                                                                                                                                                                "None" = "none"), selected = "none")),
+                                                                                                                                                              column(3, checkboxInput("pairsCor_visu", "Plot pairwise correlation plot (if FALSE, will plot correlation matrix plot)", FALSE)),
+                                                                                                                                                              column(3, textInput("titCor_visu", "Choose a title for your plot (can be NULL)")),
+                                                                                                                                                              column(3, actionButton("seeCor_visu", "See correlation plot", class = "btn-lg btn-primary"))
+                                                                                                                                                              ),
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     conditionalPanel(condition = "!input.pairsCor_visu",
+                                                                                                                                                                      fluidRow(column(4, colourpicker::colourInput("color_cor1", "Set the color for the lowest value", "#09009D",
+                                                                                                                                                                                                                   allowTransparent = TRUE, closeOnClick = TRUE)),
+                                                                                                                                                                               column(4, colourpicker::colourInput("color_cor2", "Set the color for the middle value", "#ffffff",
+                                                                                                                                                                                                                   allowTransparent = TRUE, closeOnClick = TRUE)),
+                                                                                                                                                                               column(4, colourpicker::colourInput("color_cor3", "Set the color for the highest value", "#BE0010",
+                                                                                                                                                                                                                   allowTransparent = TRUE, closeOnClick = TRUE))
+                                                                                                                                                                               )
+                                                                                                                                                                      ),
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     withSpinner(plotOutput("cor_visu", height = "800px"), type = 6),
+                                                                                                                                                     tags$br(), tags$br(),
+                                                                                                                                                     fluidRow(column(4, downloadButton("down_cor", "Download density plot")),
+                                                                                                                                                              column(4, selectInput("down_cor_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
+                                                                                                                                                              column(4, numericInput("down_cor_dpi", "Resolution", min = 5, value = 300))
                                                                                                                                                               )
                                                                                                                                                      ),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    withSpinner(plotOutput("cor_visu", height = "800px"), type = 6),
-                                                                                                                                    tags$br(), tags$br(),
-                                                                                                                                    fluidRow(column(4, downloadButton("down_cor", "Download density plot")),
-                                                                                                                                             column(4, selectInput("down_cor_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
-                                                                                                                                             column(4, numericInput("down_cor_dpi", "Resolution", min = 5, value = 300))
-                                                                                                                                             )
+                                                                                                                                    conditionalPanel(condition = "!output.visudata_up",
+                                                                                                                                                     h3("To perform this data visualization you need processed data.
+                                                                                                                                                         Either go back the 'Peptides and precursors' or 'Protein group and genes' tabs or import data
+                                                                                                                                                         by selecting the 'Import your own data' option above.")
+                                                                                                                                                     )
                                                                                                                                     ),
                                                                                                                            tabPanel("MDS",
                                                                                                                                     tags$hr(),
@@ -550,23 +585,31 @@ ui <- fluidPage(
                                                                                                                                                 This can be practical to see if your data suffer from any batch effect or if a replicate is
                                                                                                                                                 an outlier.<br>
                                                                                                                                                 You can specify your own colors for each condition and save it as a png or pdf file.</h5>"),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    fluidRow(column(4, selectInput("transfoM_visu", "Choose a data transformation",
-                                                                                                                                                                   choices = c("Log2" = "log2",
-                                                                                                                                                                               "None" = "none"), selected = "none")),
-                                                                                                                                             column(4, textInput("titM_visu", "Choose a title for your plot (can be NULL)")),
-                                                                                                                                             column(4, actionButton("seemds_visu", "See MDS plot", class = "btn-lg btn-primary"))
-                                                                                                                                             ),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    checkboxInput("isowncolor_mds", "Choose your own colors", FALSE),
-                                                                                                                                    conditionalPanel(condition = "input.isowncolor_mds",
-                                                                                                                                                     uiOutput("owncolor_mdsui")
+                                                                                                                                    conditionalPanel(condition = "output.visudata_up",
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     fluidRow(column(4, selectInput("transfoM_visu", "Choose a data transformation",
+                                                                                                                                                                                    choices = c("Log2" = "log2",
+                                                                                                                                                                                                "None" = "none"), selected = "none")),
+                                                                                                                                                              column(4, textInput("titM_visu", "Choose a title for your plot (can be NULL)")),
+                                                                                                                                                              column(4, actionButton("seemds_visu", "See MDS plot", class = "btn-lg btn-primary"))
+                                                                                                                                                              ),
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     checkboxInput("isowncolor_mds", "Select your own colors", FALSE),
+                                                                                                                                                     conditionalPanel(condition = "input.isowncolor_mds",
+                                                                                                                                                                      uiOutput("owncolor_mdsui")
+                                                                                                                                                                      ),
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     withSpinner(plotOutput("mds_visu", height = "800px"), type = 6),
+                                                                                                                                                     fluidRow(column(4, downloadButton("down_mds", "Download MDS plot")),
+                                                                                                                                                              column(4, selectInput("down_mds_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
+                                                                                                                                                              column(4, numericInput("down_mds_dpi", "Resolution", min = 5, value = 300))
+                                                                                                                                                              )
                                                                                                                                                      ),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    withSpinner(plotOutput("mds_visu", height = "800px"), type = 6),
-                                                                                                                                    fluidRow(column(4, downloadButton("down_mds", "Download MDS plot")),
-                                                                                                                                             column(4, selectInput("down_mds_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
-                                                                                                                                             column(4, numericInput("down_mds_dpi", "Resolution", min = 5, value = 300)))
+                                                                                                                                    conditionalPanel(condition = "!output.visudata_up",
+                                                                                                                                                     h3("To perform this data visualization you need processed data.
+                                                                                                                                                         Either go back the 'Peptides and precursors' or 'Protein group and genes' tabs or import data
+                                                                                                                                                         by selecting the 'Import your own data' option above.")
+                                                                                                                                                     )
                                                                                                                                     ),
                                                                                                                            tabPanel("Proportion of non-missing values",
                                                                                                                                     tags$hr(),
@@ -580,26 +623,33 @@ ui <- fluidPage(
                                                                                                                                                 you assess the quality of your data according different grouping. It is of course not necessary
                                                                                                                                                 to precise an experiemental design. <br>
                                                                                                                                                 You can save the plot as a png or pdf file.</h5>"),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    fluidRow(column(3, selectInput("transfoPVV_visu", "Choose a data transformation",
-                                                                                                                                                                   choices = c("Log2" = "log2",
-                                                                                                                                                                               "None" = "none"), selected = "none"),
-                                                                                                                                                    numericInput("propcutPVV_visu", "Choose the minimum proportion to show on the graph",
-                                                                                                                                                                 value = 0, min = 0, max = 1, step = 0.05)),
-                                                                                                                                             column(3, textInput("titPVV_visu", "Choose a title for your plot (can be NULL)")),
-                                                                                                                                             column(3, textInput("designPVV_visu", "Type the design of your experiment that match your columns names,
-                                                                                                                                                               separated by a comma.
-                                                                                                                                                               For example, if you have columns named '37_B1_Treatment', type 'temperature,replicate,condition'.")),
-                                                                                                                                             column(3, selectInput("checkPVV_visu", "Choose the grouping variable (same as in your design; like 'replicate' for example)",
-                                                                                                                                                                   choices = NULL))
-                                                                                                                                             ),
-                                                                                                                                    fluidRow(column(3, actionButton("seePVV_visu", "See PVV plot", class = "btn-lg btn-primary"))),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    withSpinner(plotOutput("PVV_visu", height = "800px"), type = 6),
-                                                                                                                                    fluidRow(column(4, downloadButton("down_PVV", "Download Proportion non-missing values plot")),
-                                                                                                                                             column(4, selectInput("down_PVV_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
-                                                                                                                                             column(4, numericInput("down_PVV_dpi", "Resolution", min = 5, value = 300))
-                                                                                                                                             )
+                                                                                                                                    conditionalPanel(condition = "output.visudata_up",
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     fluidRow(column(3, selectInput("transfoPVV_visu", "Choose a data transformation",
+                                                                                                                                                                                    choices = c("Log2" = "log2",
+                                                                                                                                                                                                "None" = "none"), selected = "none"),
+                                                                                                                                                                     numericInput("propcutPVV_visu", "Select the minimum proportion to show on the graph",
+                                                                                                                                                                                  value = 0, min = 0, max = 1, step = 0.05)),
+                                                                                                                                                              column(3, textInput("titPVV_visu", "Choose a title for your plot (can be NULL)")),
+                                                                                                                                                              column(3, textInput("designPVV_visu", "Type the design of your experiment that match your columns names,
+                                                                                                                                                                                                    separated by a comma.
+                                                                                                                                                                                                    For example, if you have columns named '37_B1_Treatment', type 'temperature,replicate,condition'.")),
+                                                                                                                                                              column(3, selectInput("checkPVV_visu", "Choose the grouping variable (same as in your design; like 'replicate' for example)",
+                                                                                                                                                                                    choices = NULL))
+                                                                                                                                                              ),
+                                                                                                                                                     fluidRow(column(3, actionButton("seePVV_visu", "See PVV plot", class = "btn-lg btn-primary"))),
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     withSpinner(plotOutput("PVV_visu", height = "800px"), type = 6),
+                                                                                                                                                     fluidRow(column(4, downloadButton("down_PVV", "Download Proportion non-missing values plot")),
+                                                                                                                                                              column(4, selectInput("down_PVV_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
+                                                                                                                                                              column(4, numericInput("down_PVV_dpi", "Resolution", min = 5, value = 300))
+                                                                                                                                                              )
+                                                                                                                                                     ),
+                                                                                                                                    conditionalPanel(condition = "!output.visudata_up",
+                                                                                                                                                     h3("To perform this data visualization you need processed data.
+                                                                                                                                                         Either go back the 'Peptides and precursors' or 'Protein group and genes' tabs or import data
+                                                                                                                                                         by selecting the 'Import your own data' option above.")
+                                                                                                                                                     )
                                                                                                                                     ),
                                                                                                                            tabPanel("Retention time",
                                                                                                                                     tags$hr(),
@@ -607,7 +657,7 @@ ui <- fluidPage(
                                                                                                                                                 colored by the q-value of each protein (or peptide, etc.).
                                                                                                                                                 It will be an interactive plot and you'll see before and after the q-value filtration.
                                                                                                                                                 To plot it, you'll need to import the report file.</h5>"),
-                                                                                                                                    conditionalPanel(condition = "input.choice_visu == 'base'",
+                                                                                                                                    conditionalPanel(condition = "output.reportdata_up & output.reportdata_check",
                                                                                                                                                      tags$hr(),
                                                                                                                                                      fluidRow(column(4, checkboxInput("interactRT_visu", "Plot Interactive plot", FALSE)),
                                                                                                                                                               column(4, actionButton("seert_visu", "See RT vs iRT", class = "btn-lg btn-primary"))
@@ -615,14 +665,18 @@ ui <- fluidPage(
                                                                                                                                                      tags$hr(),
                                                                                                                                                      conditionalPanel(condition = "input.interactRT_visu",
                                                                                                                                                                       withSpinner(plotlyOutput("rt1int_visu", height = "800px"), type = 6),
-                                                                                                                                                                      withSpinner(plotlyOutput("rt2int_visu", height = "800px"), type = 6)
+                                                                                                                                                                      conditionalPanel(condition = "output.visudata_up",
+                                                                                                                                                                                       withSpinner(plotlyOutput("rt2int_visu", height = "800px"), type = 6)
+                                                                                                                                                                                       )
                                                                                                                                                                       ),
                                                                                                                                                      conditionalPanel(condition = "!input.interactRT_visu",
                                                                                                                                                                       withSpinner(plotOutput("rt1_visu", height = "800px"), type = 6),
-                                                                                                                                                                      withSpinner(plotOutput("rt2_visu", height = "800px"), type = 6)
+                                                                                                                                                                      conditionalPanel(condition = "output.visudata_up",
+                                                                                                                                                                                       withSpinner(plotOutput("rt2_visu", height = "800px"), type = 6)
+                                                                                                                                                                                       )
                                                                                                                                                                       )
                                                                                                                                                      ),
-                                                                                                                                    conditionalPanel(condition = "input.choice_visu == 'dat'",
+                                                                                                                                    conditionalPanel(condition = "!output.reportdata_up",
                                                                                                                                                      h3("You need to import the report file from DIA nn to use this tab.
                                                                                                                                                          For this, go back to the first tab 'Import your data'"))
                                                                                                                                     ),
@@ -631,7 +685,7 @@ ui <- fluidPage(
                                                                                                                                     shiny::HTML("<h5>Here, you can plot the proteotypic proportion of your data before and after
                                                                                                                                                 the q-value filtration. To plot it, you'll need to upload the report file.<br>
                                                                                                                                                 Also, you can save the plot as a png or pdf file.</h5>"),
-                                                                                                                                    conditionalPanel(condition = "input.choice_visu == 'base'",
+                                                                                                                                    conditionalPanel(condition = "output.reportdata_up & output.reportdata_check",
                                                                                                                                                      tags$hr(),
                                                                                                                                                      fluidRow(column(4, actionButton("seeptyp_visu", "See proteotypic proportion", class = "btn-lg btn-primary"))
                                                                                                                                                               ),
@@ -642,14 +696,17 @@ ui <- fluidPage(
                                                                                                                                                               column(4, numericInput("down_ptyp1_dpi", "Resolution", min = 5, value = 300))
                                                                                                                                                               ),
                                                                                                                                                      tags$hr(),
-                                                                                                                                                     withSpinner(plotOutput("ptyp2_visu", height = "600px"), type = 6),
-                                                                                                                                                     fluidRow(column(4, downloadButton("down_ptyp2", "Download filtered proteotypic proportion plot")),
-                                                                                                                                                              column(4, selectInput("down_ptyp2_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
-                                                                                                                                                              column(4, numericInput("down_ptyp2_dpi", "Resolution", min = 5, value = 300))
-                                                                                                                                                              ),
-                                                                                                                                                     tags$hr()
+                                                                                                                                                     conditionalPanel(condition = "output.visudata_up",
+                                                                                                                                                                      withSpinner(plotOutput("ptyp2_visu", height = "600px"), type = 6),
+                                                                                                                                                                      fluidRow(column(4, downloadButton("down_ptyp2", "Download filtered proteotypic proportion plot")),
+                                                                                                                                                                               column(4, selectInput("down_ptyp2_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
+                                                                                                                                                                               column(4, numericInput("down_ptyp2_dpi", "Resolution", min = 5, value = 300))
+                                                                                                                                                                               ),
+                                                                                                                                                                      tags$hr()
+                                                                                                                                                                      )
+
                                                                                                                                                      ),
-                                                                                                                                    conditionalPanel(condition = "input.choice_visu == 'dat'",
+                                                                                                                                    conditionalPanel(condition = "!output.reportdata_up",
                                                                                                                                                      h3("You need to import the report file from DIA nn to use this tab.
                                                                                                                                                         For this, go back to the first tab 'Import your data'")
                                                                                                                                                      )
@@ -660,102 +717,109 @@ ui <- fluidPage(
                                                                                                   ),
                                                                                          tabPanel("Statistics",
                                                                                                   fluidRow(box(title = "Statistics", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
-                                                                                                               conditionalPanel(condition = "output.top3_or_ibaq",
-                                                                                                                                selectInput("dtype_stat", "Choose the type of data you want to visualize.",
-                                                                                                                                            choices = c("intensity"))
+                                                                                                               conditionalPanel(condition = "output.visudata_up",
+                                                                                                                                conditionalPanel(condition = "output.top3_or_ibaq",
+                                                                                                                                                 selectInput("dtype_stat", "Choose the type of data you want to visualize.",
+                                                                                                                                                             choices = c("intensity"))
                                                                                                                                 ),
-                                                                                                               tabsetPanel(type = "tabs",
-                                                                                                                           tabPanel("Imputation",
-                                                                                                                                    tags$hr(),
-                                                                                                                                    shiny::HTML("<h5>In this part, you'll be able to perform data imputation on your data.
-                                                                                                                                                This feature uses the <a href=https://cran.r-project.org/web/packages/mice/index.html>mice R package</a>
-                                                                                                                                                or <a href=https://cran.r-project.org/web/packages/imputeLCMD/index.html>imputeLCMD R package</a>
-                                                                                                                                                to perform the imputation. These packagee offers a lot of different imputation methods and
-                                                                                                                                                I encourage to check their documentation to see what suits best your data. <br>
-                                                                                                                                                Based on <a href=https://doi.org/10.1093/bib/bbaa112>[1]</a> and <a href=https://www.nature.com/articles/s41598-021-81279-4>[2]</a>,
-                                                                                                                                                two studies evaluating results from different imputation methods in proteomics datasets,
-                                                                                                                                                I advice to use left-censored imputation algorithms like QRILC and MinDet; random forest is also a good option.<br>
-                                                                                                                                                In the end, you'll be able to download your imputed data. If your data contains Top3
-                                                                                                                                                and/or iBAQ quantification, it will also perform the imputation on it.</h5>"),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    fluidRow(column(3, selectInput("transfo_imputation", "Choose a data transformation",
-                                                                                                                                                                   choices = c("Log2" = "log2", "None" = "none"), selected = "none")),
-                                                                                                                                             column(3, selectInput("method_imputation", "Choose a method for the imputation",
-                                                                                                                                                                   choices = c("Replace NAs by zeros" = "zeros",
-                                                                                                                                                                               "Predictive mean matching" = "pmm",
-                                                                                                                                                                               "Weighted predictive mean matching" = "midastouch",
-                                                                                                                                                                               "Random sample from observed values" = "sample",
-                                                                                                                                                                               "Classification and regression trees" = "cart",
-                                                                                                                                                                               "Random forest imputations" = "rf",
-                                                                                                                                                                               "Unconditional mean imputation" = "mean",
-                                                                                                                                                                               "Bayesian linear regression" = "norm",
-                                                                                                                                                                               "Linear regression ignoring model error" = "norm.nob",
-                                                                                                                                                                               "Linear regression using bootstrap" = "norm.boot",
-                                                                                                                                                                               "Linear regression, predicted values" = "norm.predict",
-                                                                                                                                                                               "Lasso linear regression" = "lasso.norm",
-                                                                                                                                                                               "Lasso select + linear regression" = "lasso.select.norm",
-                                                                                                                                                                               "knn" = "knn",
-                                                                                                                                                                               "Imputation with min value (MinDet)" = "MinDet",
-                                                                                                                                                                               "Imputation by random draws (MinProb)" = "MinProb",
-                                                                                                                                                                               "Imputation based on quantile regression (QRILC)" = "QRILC"),
-                                                                                                                                                                   selected = "QRILC"
-                                                                                                                                                                   )
-                                                                                                                                                    ),
-                                                                                                                                             conditionalPanel(condition = "input.method_imputation != 'knn' & input.method_imputation != 'MinProb' & input.method_imputation != 'MinDet' & input.method_imputation != 'QRILC'",
-                                                                                                                                                              column(3, numericInput("iter_imputation", "Type a number of iteration to perform the imputation",
-                                                                                                                                                                                     value = 3, step = 1, min = 1))
+                                                                                                                                tabsetPanel(type = "tabs",
+                                                                                                                                            tabPanel("Imputation",
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     shiny::HTML("<h5>In this part, you'll be able to perform data imputation on your data.
+                                                                                                                                                                  This feature uses the <a href=https://cran.r-project.org/web/packages/mice/index.html>mice R package</a>
+                                                                                                                                                                  or <a href=https://cran.r-project.org/web/packages/imputeLCMD/index.html>imputeLCMD R package</a>
+                                                                                                                                                                  to perform the imputation. These packagee offers a lot of different imputation methods and
+                                                                                                                                                                  I encourage to check their documentation to see what suits best your data. <br>
+                                                                                                                                                                  Based on <a href=https://doi.org/10.1093/bib/bbaa112>[1]</a> and <a href=https://www.nature.com/articles/s41598-021-81279-4>[2]</a>,
+                                                                                                                                                                  two studies evaluating results from different imputation methods in proteomics datasets,
+                                                                                                                                                                  I advice to use left-censored imputation algorithms like QRILC and MinDet; random forest is also a good option.<br>
+                                                                                                                                                                  In the end, you'll be able to download your imputed data. If your data contains Top3
+                                                                                                                                                                  and/or iBAQ quantification, it will also perform the imputation on it.</h5>"),
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     fluidRow(column(3, selectInput("transfo_imputation", "Choose a data transformation",
+                                                                                                                                                                                    choices = c("Log2" = "log2", "None" = "none"), selected = "none")),
+                                                                                                                                                              column(3, selectInput("method_imputation", "Select a method for the imputation",
+                                                                                                                                                                                    choices = c("Replace NAs by zeros" = "zeros",
+                                                                                                                                                                                                "Predictive mean matching" = "pmm",
+                                                                                                                                                                                                "Weighted predictive mean matching" = "midastouch",
+                                                                                                                                                                                                "Random sample from observed values" = "sample",
+                                                                                                                                                                                                "Classification and regression trees" = "cart",
+                                                                                                                                                                                                "Random forest imputations" = "rf",
+                                                                                                                                                                                                "Unconditional mean imputation" = "mean",
+                                                                                                                                                                                                "Bayesian linear regression" = "norm",
+                                                                                                                                                                                                "Linear regression ignoring model error" = "norm.nob",
+                                                                                                                                                                                                "Linear regression using bootstrap" = "norm.boot",
+                                                                                                                                                                                                "Linear regression, predicted values" = "norm.predict",
+                                                                                                                                                                                                "Lasso linear regression" = "lasso.norm",
+                                                                                                                                                                                                "Lasso select + linear regression" = "lasso.select.norm",
+                                                                                                                                                                                                "knn" = "knn",
+                                                                                                                                                                                                "Imputation with min value (MinDet)" = "MinDet",
+                                                                                                                                                                                                "Imputation by random draws (MinProb)" = "MinProb",
+                                                                                                                                                                                                "Imputation based on quantile regression (QRILC)" = "QRILC"),
+                                                                                                                                                                                    selected = "QRILC"
+                                                                                                                                                                                    )
+                                                                                                                                                                     ),
+                                                                                                                                                              conditionalPanel(condition = "input.method_imputation != 'knn' & input.method_imputation != 'MinProb' & input.method_imputation != 'MinDet' & input.method_imputation != 'QRILC'",
+                                                                                                                                                                               column(3, numericInput("iter_imputation", "Type a number of iteration to perform the imputation",
+                                                                                                                                                                                                      value = 3, step = 1, min = 1))
+                                                                                                                                                                               ),
+                                                                                                                                                              column(3, actionButton("goimputation_stat", "Start imputation", class = "btn-lg btn-primary"))
                                                                                                                                                               ),
-                                                                                                                                             column(3, actionButton("goimputation_stat", "Start imputation", class = "btn-lg btn-primary"))
-                                                                                                                                             ),
-                                                                                                                                    tags$hr(),
+                                                                                                                                                     tags$hr(),
 
-                                                                                                                                    textOutput("info_imputation"),
-                                                                                                                                    fluidRow(column(12, DT::dataTableOutput("imputation_stat"))),
+                                                                                                                                                     textOutput("info_imputation"),
+                                                                                                                                                     fluidRow(column(12, DT::dataTableOutput("imputation_stat"))),
 
-                                                                                                                                    tags$hr(),
-                                                                                                                                    fluidRow(column(3, downloadButton("down_imputation", "Download results")),
-                                                                                                                                             column(3, selectInput("format_imputation", "Select a format",
-                                                                                                                                                                   choices = c("txt", "csv", "xlsx"),
-                                                                                                                                                                   selected = "txt"))
-                                                                                                                                             )
-                                                                                                                                    ),
-
-                                                                                                                           tabPanel("Volcano plot",
-                                                                                                                                    tags$hr(),
-                                                                                                                                    shiny::HTML("<h5>In this part, you can perform a basic volcano plot on your data.
-                                                                                                                                                You can choose which condition to compare and then it will compute
-                                                                                                                                                the mean of the differences and the p-value from a t-test. From these two values,
-                                                                                                                                                it will perform an FDR correction (FDR that you can set) to plot a volcano plot.<br>
-                                                                                                                                                You can choose to save the file obtained from this analysis to get the value
-                                                                                                                                                computed and which IDs (proteins, peptides, etc.) are significantly different
-                                                                                                                                                between the two grouping conditions. Also, you can save the volcano plot as a png or pdf file.</h5>"),
-                                                                                                                                    tags$hr(),
-                                                                                                                                    fluidRow(column(3, selectInput("ctrl_volcano", "Select the controls from your data", choices = NULL, multiple = TRUE)),
-                                                                                                                                             column(3, selectInput("treated_volcano", "Select the treatments from your data", choices = NULL, multiple = TRUE)),
-                                                                                                                                             column(3, selectInput("transfo_volcano", "Choose a data transformation",
-                                                                                                                                                                   choices = c("Log2" = "log2", "None" = "none"), selected = "none")),
-                                                                                                                                             conditionalPanel(condition = "!output.reportdata_up | input.choice_visu == 'dat'",
-                                                                                                                                                              column(3, textInput("nmid_volcano", "Type the name of the column that contains the IDs", "id"))
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     fluidRow(column(3, downloadButton("down_imputation", "Download results")),
+                                                                                                                                                              column(3, selectInput("format_imputation", "Select a format",
+                                                                                                                                                                                    choices = c("txt", "csv", "xlsx"),
+                                                                                                                                                                                    selected = "txt"))
                                                                                                                                                               )
-                                                                                                                                             ),
-                                                                                                                                    fluidRow(column(3, numericInput("fdr_volcano", "Choose an FDR", min = 0, max = 1, value = 0.01, step = 0.01)),
-                                                                                                                                             column(3, numericInput("fccut_volcano", "Choose a fold change cutoff", min = 0, value = 2.5, step = 0.1)),
-                                                                                                                                             column(3, textInput("tit_volcano", "Choose a title for your plot (can be NULL)")),
-                                                                                                                                             column(3, checkboxInput("savef_volcano", "Save results files", TRUE))
-                                                                                                                                             ),
-                                                                                                                                    fluidRow(column(3, actionButton("seevolcano_stat", "See volcano plot", class = "btn-lg btn-primary"))),
+                                                                                                                                                     ),
 
-                                                                                                                                    tags$hr(),
+                                                                                                                                            tabPanel("Volcano plot",
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     shiny::HTML("<h5>In this part, you can perform a basic volcano plot on your data.
+                                                                                                                                                                  You can choose which condition to compare and then it will compute
+                                                                                                                                                                  the mean of the differences and the p-value from a t-test. From these two values,
+                                                                                                                                                                  it will perform an FDR correction (FDR that you can set) to plot a volcano plot.<br>
+                                                                                                                                                                  You can choose to save the file obtained from this analysis to get the value
+                                                                                                                                                                  computed and which IDs (proteins, peptides, etc.) are significantly different
+                                                                                                                                                                  between the two grouping conditions. Also, you can save the volcano plot as a png or pdf file.</h5>"),
+                                                                                                                                                     tags$hr(),
+                                                                                                                                                     fluidRow(column(3, selectInput("ctrl_volcano", "Select the controls from your data", choices = NULL, multiple = TRUE)),
+                                                                                                                                                              column(3, selectInput("treated_volcano", "Select the treatments from your data", choices = NULL, multiple = TRUE)),
+                                                                                                                                                              column(3, selectInput("transfo_volcano", "Choose a data transformation",
+                                                                                                                                                                                    choices = c("Log2" = "log2", "None" = "none"), selected = "none")),
+                                                                                                                                                              conditionalPanel(condition = "!output.reportdata_up | input.choice_visu == 'dat'",
+                                                                                                                                                                               column(3, textInput("nmid_volcano", "Type the name of the column that contains the IDs", "id"))
+                                                                                                                                                                               )
+                                                                                                                                                              ),
+                                                                                                                                                     fluidRow(column(3, numericInput("fdr_volcano", "Select an FDR", min = 0, max = 1, value = 0.01, step = 0.01)),
+                                                                                                                                                              column(3, numericInput("fccut_volcano", "Select a fold change cutoff", min = 0, value = 2.5, step = 0.1)),
+                                                                                                                                                              column(3, textInput("tit_volcano", "Choose a title for your plot (can be NULL)")),
+                                                                                                                                                              column(3, checkboxInput("savef_volcano", "Save results files", TRUE))
+                                                                                                                                                              ),
+                                                                                                                                                     fluidRow(column(3, actionButton("seevolcano_stat", "See volcano plot", class = "btn-lg btn-primary"))),
 
-                                                                                                                                    textOutput("info_volcano"),
-                                                                                                                                    withSpinner(plotOutput("volcano_stat", height = "600px"), type = 6),
-                                                                                                                                    fluidRow(column(4, downloadButton("down_volcano", "Download volcano plot")),
-                                                                                                                                             column(4, selectInput("down_volcano_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
-                                                                                                                                             column(4, numericInput("down_volcano_dpi", "Resolution", min = 5, value = 300))
-                                                                                                                                    ),
-                                                                                                                                    tags$hr()
-                                                                                                                                    )
-                                                                                                                           )
+                                                                                                                                                     tags$hr(),
+
+                                                                                                                                                     textOutput("info_volcano"),
+                                                                                                                                                     withSpinner(plotOutput("volcano_stat", height = "600px"), type = 6),
+                                                                                                                                                     fluidRow(column(4, downloadButton("down_volcano", "Download volcano plot")),
+                                                                                                                                                              column(4, selectInput("down_volcano_format", "Select a format", choices = c("png", "pdf"), selected = "png")),
+                                                                                                                                                              column(4, numericInput("down_volcano_dpi", "Resolution", min = 5, value = 300))
+                                                                                                                                                              ),
+                                                                                                                                                     tags$hr()
+                                                                                                                                                     )
+                                                                                                                                            )
+                                                                                                                                ),
+                                                                                                               conditionalPanel(condition = "!output.visudata_up",
+                                                                                                                                h3("To perform data imputation or print a volcano plot you need processed data.
+                                                                                                                                   Either go back the 'Peptides and precursors' or 'Protein group and genes' tabs or import data
+                                                                                                                                   by selecting the 'Import your own data' option above.")
+                                                                                                                                )
                                                                                                                )
                                                                                                            )
                                                                                                   )
@@ -949,7 +1013,7 @@ server <- function(input, output, session){
 
     if(length(cn)){
       needed_info <- list("Run" = "The name of the analyzed files: KL_Try_001_a",
-                          "File.Name" = "The full file names used for your analysis: D:/Raw/PXD010529/KL_Try_001_a.mzML.dia; if 'Run' is in your data, 'File.Name is not necessary",
+                          "File.Name" = "The file names used for your analysis: D:/Raw/PXD010529/KL_Try_001_a.mzML.dia",
                           "Precursor.Id" = "The precursor ids: AADETAAAFYPSK2 for example",
                           "Stripped.Sequence" = "The unmodified peptide sequence: AADETAAAFYPSK for example",
                           "Modified.Sequence" = "The modified peptide sequence: AC(UniMod:4)DDKIMYVDYK for example",
@@ -963,7 +1027,8 @@ server <- function(input, output, session){
                           "Q.Value" = "The global q-value",
                           "Protein.Q.Value" = "The protein q-value",
                           "PG.Q.Value" = "The protein group q-value",
-                          "GG.Q.Value"= "The gene group q-value")
+                          "GG.Q.Value"= "The gene group q-value",
+                          "Quantity.Quality" = "The quality of the quantification")
       needed <- names(needed_info)
       if(all(needed %in% cn)){
         reportdata_chek$x <- NULL
@@ -980,21 +1045,36 @@ server <- function(input, output, session){
         }
 
         if(length(needed)){
+          needed_err <- needed
+          needed_war <- ""
           needed_info <- needed_info[needed]
 
-          needed <- paste0("The column", ifelse(length(needed) > 1, "s ", " "),
-                           paste0("'", needed, "'", collapse = ", "),
-                           ifelse(length(needed) > 1, " are", " is"),
-                           " missing in your report ! <br>
-                        Please check the spelling as you will not be able to fully use DIAgui package")
-          needed <- paste0("<span style='color:red;'>", needed, "</span><br><br>")
-          reportdata_chek$x <- needed
+          if("Quantity.Quality" %in% needed){
+            needed_err <- needed[-which(needed == "Quantity.Quality")]
+            needed_war <- paste0("<span style='color:orange;'>",
+                                 "The column Quantity.Quality is missing in your report. The filter on quality will hence not be applied.",
+                                 "</span><br><br>")
+          }
 
           needed_info <- t(data.frame(needed_info))
           colnames(needed_info) <- "description"
           needed_info <- as.data.frame(needed_info)
           reportdata_chek$t <- needed_info
-          return(FALSE)
+
+          if(length(needed_err)){
+            needed_err <- paste0("The column", ifelse(length(needed_err) > 1, "s ", " "),
+                                 paste0("'", needed_err, "'", collapse = ", "),
+                                 ifelse(length(needed_err) > 1, " are", " is"),
+                                 " missing in your report ! <br>
+                        Please check the spelling as you will not be able to fully use DIAgui package")
+            needed_err <- paste0("<span style='color:red;'>", needed_err, "</span><br><br>")
+            reportdata_chek$x <- paste0(needed_err, needed_war)
+            return(FALSE)
+          }
+          else{
+            reportdata_chek$x <- needed_war
+            return(TRUE)
+          }
         }
         else{
           reportdata_chek$x <- NULL
@@ -1078,7 +1158,8 @@ server <- function(input, output, session){
       m <- matrix("", nrow = length(fr), ncol = 1)
       rownames(m) <- fr
       colnames(m) <- "New_names"
-      matrixInput("newfrac_dat", "Type new names for your fractions", m)
+      matrixInput("newfrac_dat", "Type new names for your fractions",
+                  m)
     }
     else{
       NULL
@@ -1239,8 +1320,7 @@ server <- function(input, output, session){
     }
 
   })
-
-  ### PRECURSORS
+    ### PRECURSORS
     observe({
       if(!is.null(Report_data$d)){
         modif <- Report_data$d$Modified.Sequence
@@ -1272,7 +1352,15 @@ server <- function(input, output, session){
                         protein.q = input$qvprot_prec,
                         pg.q = input$qvpg_prec,
                         gg.q = input$qvgg_prec,
+                        quality = input$quality_prec,
                         method = "max")
+
+      if(is.null(d)){
+        message("<span style='color:red;'>The filters you selected returned an empty data.frame. Try to be less stringent.</span>")
+        return()
+      }
+
+      d
     })
 
     observeEvent(input$go_prec, {
@@ -1281,7 +1369,8 @@ server <- function(input, output, session){
         message("Calculation...")
         showNotification("Getting the precursors tab", type = "message", duration = 2)
         precu_ev$x <- precu()
-        message("Done !")
+        if(!is.null(precu()))
+          message("Done !")
       },
       message = function(m) {
         shinyjs::html(id = "info_prec", html = paste(m$message, "<br>", sep = ""), add = FALSE)
@@ -1346,6 +1435,7 @@ server <- function(input, output, session){
           df <- df[idx_modif,]
         }
       }
+
       smpl_header <- ifelse("Run" %in% colnames(df), "Run", "File.Name")
       d <- diann_matrix(df, sample.header = smpl_header,
                         id.header = input$centercol_pep,
@@ -1354,7 +1444,12 @@ server <- function(input, output, session){
                         protein.q = input$qvprot_pep,
                         pg.q = input$qvpg_pep,
                         gg.q = input$qvgg_pep,
+                        quality = input$quality_pep,
                         method = "max")
+      if(is.null(d)){
+        message("<span style='color:red;'>The filters you selected returned an empty data.frame. Try to be less stringent.</span>")
+        return()
+      }
 
       if(input$getPTM_pep){
         if(all(c("Peptidoform.Q.Value", "Global.Peptidoform.Q.Value", "Lib.Peptidoform.Q.Value",
@@ -1410,7 +1505,8 @@ server <- function(input, output, session){
           message("Calculation...")
           showNotification("Getting the peptides tab", type = "message", duration = 2)
           pep_ev$x <- pep()
-          message("Done !")
+          if(!is.null(pep()))
+            message("Done !")
         }
       },
       message = function(m) {
@@ -1480,7 +1576,21 @@ server <- function(input, output, session){
         df <- df[which(df[["Proteotypic"]] != 0), ]
       }
       df <- df %>% dplyr::filter(Q.Value <= input$qv_peplfq & PG.Q.Value <= input$qvpg_peplfq & Protein.Q.Value <= input$qvprot_peplfq & GG.Q.Value <= input$qvgg_peplfq)
+
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The p-value filtering returned an empty data.frame. Try increasing the minimum p-values.</span>")
+        return()
+      }
+
       smpl_header <- ifelse("Run" %in% colnames(df), "Run", "File.Name")
+
+      if("Quantity.Quality" %in% colnames(df)){
+        df <- df[which(df$Quantity.Quality >= input$quality_peplfq),]
+      }
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The quantity quality filtering returned an empty data.frame. Try decreasing the minimum quality.</span>")
+        return()
+      }
 
       if(input$wLFQ_peplfq == "diann"){
         d <- diann_maxlfq(df, sample.header = smpl_header,
@@ -1588,7 +1698,6 @@ server <- function(input, output, session){
 
       d
     })
-
     observeEvent(input$go_peplfq, {
       withCallingHandlers({
         shinyjs::html("info_peplfq", "")
@@ -1601,7 +1710,8 @@ server <- function(input, output, session){
           message("Calculation...")
           showNotification(paste("Getting the peptides tab using the MaxLFQ algorithm from", input$wLFQ_peplfq, "package"), type = "message")
           peplfq_ev$x <- peplfq()
-          message("Done !")
+          if(!is.null(peplfq()))
+            message("Done !")
         }
       },
       message = function(m) {
@@ -1653,7 +1763,7 @@ server <- function(input, output, session){
         updateSelectInput(session, "modif_pg", choices = modif)
       }
     })
-    fasta <- visu_data <- reactive({
+    fasta <- reactive({
       fts <- NULL
       if(input$fasta_pg){
         File <- input$fastafile_pg
@@ -1686,6 +1796,19 @@ server <- function(input, output, session){
         df <- df[which(df[["Proteotypic"]] != 0), ]
       }
       df <- df %>% dplyr::filter(Q.Value <= input$qv_pg & PG.Q.Value <= input$qvpg_pg & Protein.Q.Value <= input$qvprot_pg & GG.Q.Value <= input$qvgg_pg)
+
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The p-value filtering returned an empty data.frame. Try increasing the minimum p-values.</span>")
+        return()
+      }
+      if("Quantity.Quality" %in% colnames(df)){
+        df <- df[which(df$Quantity.Quality >= input$quality_pg),]
+      }
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The quantity quality filtering returned an empty data.frame. Try decreasing the minimum quality.</span>")
+        return()
+      }
+
       smpl_header <- ifelse("Run" %in% colnames(df), "Run", "File.Name")
       n_cond <- length(unique(df[[smpl_header]]))
 
@@ -1808,6 +1931,7 @@ server <- function(input, output, session){
                              proteotypic.only = input$protypiconly_pg,
                              q = input$qv_pg, protein.q = input$qvprot_pg,
                              pg.q = input$qvpg_pg, gg.q = input$qvgg_pg,
+                             quality = input$quality_pg,
                              method = "sum")
         brut$Genes <- NULL
         brut$Protein.Names <- NULL
@@ -1832,7 +1956,8 @@ server <- function(input, output, session){
         message("Calculation...")
         showNotification(paste("Getting the protein group tab using the MaxLFQ algorithm from", input$wLFQ_peplfq, "package"), type = "message")
         pg_ev$x <- pg()
-        message("Done !")
+        if(!is.null(pg()))
+          message("Done !")
       },
       message = function(m) {
         shinyjs::html(id = "info_pg", html = paste(m$message, "<br>", sep = ""), add = FALSE)
@@ -1900,18 +2025,26 @@ server <- function(input, output, session){
                    protein.q = input$qvprot_gg,
                    pg.q = input$qvpg_gg,
                    gg.q = input$qvgg_gg,
+                   quality = input$quality_gg,
                    get_pep = TRUE, only_pepall = input$onlycountall_gg,
                    Top3 = input$Top3_gg,
                    method = "max")
-    })
 
+      if(is.null(d)){
+        message("<span style='color:red;'>The filters you selected returned an empty data.frame. Try to be less stringent.</span>")
+        return()
+      }
+
+      d
+    })
     observeEvent(input$go_gg, {
       withCallingHandlers({
         shinyjs::html("info_gg", "")
         message("Calculation...")
-      showNotification("Getting the unique genes tab", type = "message", duration = 2)
-      gg_ev$x <- gg()
-      message("Done !")
+        showNotification("Getting the unique genes tab", type = "message", duration = 2)
+        gg_ev$x <- gg()
+        if(!is.null(gg()))
+          message("Done !")
       },
       message = function(m) {
         shinyjs::html(id = "info_gg", html = paste(m$message, "<br>", sep = ""), add = FALSE)
@@ -2461,34 +2594,38 @@ server <- function(input, output, session){
                                      label3 = Genes, color = PG.Q.Value)) +
         geom_point() +
         facet_wrap(smpl_header) +
-        labs(title = "Report data") +
-        theme(plot.title = element_text(hjust = 0.5))
+        labs(title = "Report data") + theme(plot.title = element_text(hjust = 0.5))
       g
     })
     rtf <- reactive({
-      d <- Report_data$d
-      nm <- ""
-      if(input$bdata_visu == "Protein group"){
-        nm <- "Protein.Group"
-      }
-      else if(input$bdata_visu == "Unique genes"){
-        nm <- "Genes"
-      }
-      else if(input$bdata_visu == "Peptides" | input$bdata_visu == "Peptides.MaxLFQ"){
-        nm <- "Stripped.Sequence"
-      }
-      else if(input$bdata_visu == "Precursors"){
-        nm <- "Precursor.Id"
-      }
-      d <- d[d[[nm]] %in% visu_data()$id,]
+      if(!is.null(visu_data())){
+        d <- Report_data$d
+        nm <- ""
+        if(input$bdata_visu == "Protein group"){
+          nm <- "Protein.Group"
+        }
+        else if(input$bdata_visu == "Unique genes"){
+          nm <- "Genes"
+        }
+        else if(input$bdata_visu == "Peptides" | input$bdata_visu == "Peptides.MaxLFQ"){
+          nm <- "Stripped.Sequence"
+        }
+        else if(input$bdata_visu == "Precursors"){
+          nm <- "Precursor.Id"
+        }
+        d <- d[d[[nm]] %in% visu_data()$id,]
 
-      smpl_header <- ifelse("Run" %in% colnames(d), "Run", "File.Name")
-      g <- ggplot(d, aes(iRT, RT, label1 = Precursor.Id, label2 = Protein.Ids,
-                         label3 = Genes, color = PG.Q.Value)) +
-        geom_point() +
-        facet_wrap(smpl_header) +
-        labs(title = "Report data filtered") + theme(plot.title = element_text(hjust = 0.5))
-      g
+        smpl_header <- ifelse("Run" %in% colnames(d), "Run", "File.Name")
+        g <- ggplot(d, aes(iRT, RT, label1 = Precursor.Id, label2 = Protein.Ids,
+                           label3 = Genes, color = PG.Q.Value)) +
+          geom_point() +
+          facet_wrap(smpl_header) +
+          labs(title = "Report data filtered") + theme(plot.title = element_text(hjust = 0.5))
+        g
+      }
+      else{
+        NULL
+      }
     })
     observeEvent(input$seert_visu, {
       n <- nrow(Report_data$d)
@@ -2558,9 +2695,10 @@ server <- function(input, output, session){
       f = NULL
     )
     ptypg <- reactive({
-      smpl_header <- ifelse("Run" %in% colnames(d), "Run", "File.Name")
+      smpl_header <- ifelse("Run" %in% colnames(Report_data$d), "Run", "File.Name")
       ptyp <- Report_data$d[, c(smpl_header, "Proteotypic")]
       ptyp$Proteotypic <- as.character(ptyp$Proteotypic)
+
       ggplot(ptyp, aes(Proteotypic, fill = Proteotypic)) +
         geom_bar() +
         facet_wrap(smpl_header) +
@@ -2568,29 +2706,35 @@ server <- function(input, output, session){
         theme(plot.title = element_text(hjust = 0.5))
     })
     ptypf <- reactive({
-      d <- Report_data$d
-      nm <- ""
-      if(input$bdata_visu == "Protein group"){
-        nm <- "Protein.Group"
-      }
-      else if(input$bdata_visu == "Unique genes"){
-        nm <- "Genes"
-      }
-      else if(input$bdata_visu == "Peptides" | input$bdata_visu == "Peptides.MaxLFQ"){
-        nm <- "Stripped.Sequence"
-      }
-      else if(input$bdata_visu == "Precursors"){
-        nm <- "Precursor.Id"
-      }
-      smpl_header <- ifelse("Run" %in% colnames(d), "Run", "File.Name")
-      ptyp <- d[d[[nm]] %in% visu_data()$id,c(smpl_header, "Proteotypic")]
-      ptyp$Proteotypic <- as.character(ptyp$Proteotypic)
+      if(!is.null(visu_data())){
+        d <- Report_data$d
+        nm <- ""
+        if(input$bdata_visu == "Protein group"){
+          nm <- "Protein.Group"
+        }
+        else if(input$bdata_visu == "Unique genes"){
+          nm <- "Genes"
+        }
+        else if(input$bdata_visu == "Peptides" | input$bdata_visu == "Peptides.MaxLFQ"){
+          nm <- "Stripped.Sequence"
+        }
+        else if(input$bdata_visu == "Precursors"){
+          nm <- "Precursor.Id"
+        }
 
-      ggplot(ptyp, aes(Proteotypic, fill = Proteotypic)) +
-        geom_bar() +
-        facet_wrap(smpl_header) +
-        labs(title = "Report data filtered") +
-        theme(plot.title = element_text(hjust = 0.5))
+        smpl_header <- ifelse("Run" %in% colnames(d), "Run", "File.Name")
+        ptyp <- d[d[[nm]] %in% visu_data()$id,c(smpl_header, "Proteotypic")]
+        ptyp$Proteotypic <- as.character(ptyp$Proteotypic)
+
+        ggplot(ptyp, aes(Proteotypic, fill = Proteotypic)) +
+          geom_bar() +
+          facet_wrap(smpl_header) +
+          labs(title = "Report data filtered") +
+          theme(plot.title = element_text(hjust = 0.5))
+      }
+      else{
+        NULL
+      }
     })
     observeEvent(input$seeptyp_visu, {
       showNotification("Get proteotypic proportion", type = "message", duration = 4)
