@@ -13,6 +13,7 @@
 #' @param protein.q Uniquely identified protein q-value threshold
 #' @param pg.q Protein group q-value threshold
 #' @param gg.q Gene group q-value threshold
+#' @param quality Quantity quality threshold
 #' @param get_pep logical; get peptide count?
 #' @param only_pepall logical; should only keep peptide counts all or also
 #'   peptide counts for each fractions?
@@ -29,8 +30,8 @@
 
 diann_matrix <- function (x, sample.header = "File.Name",
                           id.header = "Precursor.Id", quantity.header = "Precursor.Normalised",
-                          proteotypic.only = FALSE, q = 0.01, protein.q = 1, pg.q = 0.01,
-                          gg.q = 1, get_pep = FALSE, only_pepall = FALSE, margin = -10, Top3 = FALSE,
+                          proteotypic.only = FALSE, q = 0.01, protein.q = 1, pg.q = 0.01, gg.q = 1,
+                          quality = 0.8, get_pep = FALSE, only_pepall = FALSE, margin = -10, Top3 = FALSE,
                           method = c("max", "sum")){
   df <- data.table::as.data.table(x)
   if(proteotypic.only){
@@ -39,6 +40,15 @@ diann_matrix <- function (x, sample.header = "File.Name",
   dft <- df[which(df[[id.header]] != "" & df[["Q.Value"]] <= q & df[["Protein.Q.Value"]] <=
                     protein.q & df[["PG.Q.Value"]] <= pg.q & df[["GG.Q.Value"]] <=
                     gg.q),]
+
+  if("Quantity.Quality" %in% colnames(df)){
+    dft <- dft[which(dft[["Quantity.Quality"]] >= quality),]
+  }
+
+  if(nrow(dft) == 0){
+    message("The filters you selected returned an empty data.frame. Try to be less stringent.")
+    return()
+  }
 
   info <- c()
   if(id.header == "Precursor.Id" | id.header == "Stripped.Sequence" | id.header == "Modified.Sequence"){
