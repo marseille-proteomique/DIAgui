@@ -4,6 +4,7 @@
 #' eventually peptides count.
 #'
 #' @param x data, output from diann_load
+#' @param sample.header Sample id column name
 #' @param id.header Id column name (protein, gene, ...)
 #' @param quantity.header Quantity column name
 #' @param proteotypic.only logical; Only proteotypic peptides and the
@@ -12,7 +13,6 @@
 #' @param protein.q Uniquely identified protein q-value threshold
 #' @param pg.q Protein group q-value threshold
 #' @param gg.q Gene group q-value threshold
-#' @param quality Quantity quality threshold
 #' @param get_pep logical; get peptide count?
 #' @param only_pepall logical; should only keep peptide counts all or also
 #'   peptide counts for each fractions?
@@ -27,9 +27,10 @@
 #'
 #' @export
 
-diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Precursor.Normalised",
-                          proteotypic.only = FALSE, q = 0.01, protein.q = 1, pg.q = 0.01, gg.q = 1,
-                          quality = 0.8, get_pep = FALSE, only_pepall = FALSE, margin = -10, Top3 = FALSE,
+diann_matrix <- function (x, sample.header = "File.Name",
+                          id.header = "Precursor.Id", quantity.header = "Precursor.Normalised",
+                          proteotypic.only = FALSE, q = 0.01, protein.q = 1, pg.q = 0.01,
+                          gg.q = 1, get_pep = FALSE, only_pepall = FALSE, margin = -10, Top3 = FALSE,
                           method = c("max", "sum")){
   df <- data.table::as.data.table(x)
   if(proteotypic.only){
@@ -39,15 +40,6 @@ diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Prec
                     protein.q & df[["PG.Q.Value"]] <= pg.q & df[["GG.Q.Value"]] <=
                     gg.q),]
 
-  if("Quantity.Quality" %in% colnames(df)){
-    dft <- dft[which(dft[["Quantity.Quality"]] >= quality),]
-  }
-
-  if(nrow(dft) == 0){
-    message("The filters you selected returned an empty data.frame. Try to be less stringent.")
-    return()
-  }
-
   info <- c()
   if(id.header == "Precursor.Id" | id.header == "Stripped.Sequence" | id.header == "Modified.Sequence"){
     info <- c("Stripped.Sequence", "Modified.Sequence")
@@ -56,29 +48,29 @@ diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Prec
   info <- info[!(info %in% id.header)]
   dft$add_info <- apply(as.data.frame(dft)[,info], 1, function(x) paste(x, collapse = " "))
 
-  df <- unique(dft[, c("File.Name", id.header, quantity.header, "add_info"), with = FALSE]) # should remove unique since it will be handled
-  is_duplicated = any(duplicated(paste0(df[["File.Name"]],
+  df <- unique(dft[, c(sample.header, id.header, quantity.header, "add_info"), with = FALSE]) # should remove unique since it will be handled
+  is_duplicated = any(duplicated(paste0(df[[sample.header]],
                                         ":", df[[id.header]])))
   if (is_duplicated) {
     warning("Multiple quantities per id: the maximum of these will be calculated")
-    out <- pivot_aggregate(df, "File.Name", id.header, quantity.header, method = method)
+    out <- pivot_aggregate(df, sample.header, id.header, quantity.header, method = method)
     out <- tidyr::separate(out, add_info, into = info, sep = " ")
   }
   else {
-    out <- pivot(df, "File.Name", id.header, quantity.header)
+    out <- pivot(df, sample.header, id.header, quantity.header)
     out <- tidyr::separate(out, add_info, into = info, sep = " ")
   }
   dft$add_info <- NULL
   if(Top3 & id.header == "Genes"){
-    x <- unique(dft[which(dft[["Genes"]] != ""), c("File.Name",
+    x <- unique(dft[which(dft[["Genes"]] != ""), c(sample.header,
                                                    "Genes", "Precursor.Id", "Precursor.Quantity"), with = FALSE])
-    x[["File.Name"]] <- as.character(x[["File.Name"]])
+    x[[sample.header]] <- as.character(x[[sample.header]])
     x[["Genes"]] <- as.character(x[["Genes"]])
     x[["Precursor.Id"]] <- as.character(x[["Precursor.Id"]])
     x[["Precursor.Quantity"]] <- as.numeric(x[["Precursor.Quantity"]])
     if (any(x[["Precursor.Quantity"]] < 0, na.rm = T))
       stop("Only non-negative quantities accepted")
-    is_duplicated = any(duplicated(paste0(x[["File.Name"]],
+    is_duplicated = any(duplicated(paste0(x[[sample.header]],
                                           ":", x[["Genes"]], ":", x[["Precursor.Id"]])))
     if (is_duplicated)
       warning("Multiple quantities per id: the maximum of these will be calculated")
@@ -87,12 +79,12 @@ diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Prec
     x[["Precursor.Quantity"]][which(x[["Precursor.Quantity"]] <= margin)] <- NA
     x <- x[!is.na(x[["Precursor.Quantity"]]), ]
     genes <- unique(x[["Genes"]])
-    samples <- unique(x[["File.Name"]])
+    samples <- unique(x[[sample.header]])
     top3_res <- list()
     for(i in genes){
       top3 <- x[which(x[["Genes"]] == i),]
       top3[["Genes"]] <- NULL
-      top3 <- tidyr::spread(top3, File.Name, Precursor.Quantity)
+      top3 <- tidyr::spread(top3, key = sample.header, Precursor.Quantity)
       top3[["Precursor.Id"]] <- NULL
       top3_res[[i]] <- top3
     }
@@ -126,11 +118,11 @@ diann_matrix <- function (x, id.header = "Precursor.Id", quantity.header = "Prec
     out <- merge(out, top3_res, by=id.header)
   }
   if(get_pep){
-    x <- dft[,c("File.Name", id.header, "Genes.MaxLFQ.Unique", "Precursor.Id"), with = FALSE]
-    pep <- as.data.frame(matrix(0, nrow = nrow(out), ncol = 2 + length(unique(x$File.Name))))
-    colnames(pep) <- c(id.header, "peptides_counts_all", paste0("pep_count_", unique(x$File.Name)))
-    for (i in unique(x$File.Name)){
-      frac <- which(x$File.Name == i)
+    x <- dft[,c(sample.header, id.header, "Genes.MaxLFQ.Unique", "Precursor.Id"), with = FALSE]
+    pep <- as.data.frame(matrix(0, nrow = nrow(out), ncol = 2 + length(unique(x[[sample.header]]))))
+    colnames(pep) <- c(id.header, "peptides_counts_all", paste0("pep_count_", unique(x[[sample.header]])))
+    for (i in unique(x[[sample.header]])){
+      frac <- which(x[[sample.header]] == i)
       a <- x[frac,]
       r = 1
       for (k in unique(df[[id.header]])){
