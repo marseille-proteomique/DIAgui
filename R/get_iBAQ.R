@@ -78,11 +78,11 @@ get_iBAQ <- function (dataset, proteinDB = list(),
     }
     nbPeptides[idx] <- nbPep
   }
-  dataset_IBAQ <- dataset[,ecol]
+  dataset_IBAQ <- dataset[,ecol, drop = FALSE]
   dataset_IBAQ <- dataset_IBAQ/nbPeptides
   if(log2_transformed){
     dataset_IBAQ <- log2(dataset_IBAQ)
-    dataset[,ecol] <- log2(dataset[,ecol])
+    dataset[,ecol, drop = FALSE] <- log2(dataset[,ecol, drop = FALSE])
   }
   names(dataset_IBAQ) <- paste0("iBAQ_", names(dataset_IBAQ))
   dataset_IBAQ$nbTrypticPeptides <- nbPeptides
