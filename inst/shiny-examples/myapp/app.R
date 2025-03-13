@@ -98,13 +98,10 @@ ui <- fluidPage(
                                                                     fluidRow(column(12, DT::dataTableOutput("df_report"))),
                                                                     tags$hr(),
 
-                                                                    conditionalPanel(condition = "!output.reportdata_check",
-                                                                                     htmlOutput("reportdata_check_text"),
-                                                                                     DT::dataTableOutput("reportdata_check_tab")
-                                                                                     ),
+                                                                    htmlOutput("reportdata_check_text"),
+                                                                    DT::dataTableOutput("reportdata_check_tab"),
+
                                                                     conditionalPanel(condition = "output.reportdata_check",
-                                                                                     htmlOutput("reportdata_check_text"),
-                                                                                     DT::dataTableOutput("reportdata_check_tab"),
                                                                                      tags$hr(),
                                                                                      tags$u(h2("Rename your fractions")),
                                                                                      htmlOutput("frac_dat"),
@@ -1051,17 +1048,19 @@ server <- function(input, output, session){
 
           if("Quantity.Quality" %in% needed){
             needed_err <- needed[-which(needed == "Quantity.Quality")]
+          }
+          else{
             needed_war <- paste0("<span style='color:orange;'>",
                                  "The column Quantity.Quality is missing in your report. The filter on quality will hence not be applied.",
                                  "</span><br><br>")
           }
 
-          needed_info <- t(data.frame(needed_info))
-          colnames(needed_info) <- "description"
-          needed_info <- as.data.frame(needed_info)
-          reportdata_chek$t <- needed_info
-
           if(length(needed_err)){
+            needed_info <- t(data.frame(needed_info))
+            colnames(needed_info) <- "description"
+            needed_info <- as.data.frame(needed_info)
+            reportdata_chek$t <- needed_info
+
             needed_err <- paste0("The column", ifelse(length(needed_err) > 1, "s ", " "),
                                  paste0("'", needed_err, "'", collapse = ", "),
                                  ifelse(length(needed_err) > 1, " are", " is"),
