@@ -13,6 +13,7 @@
 #' @param p.qv Uniquely identified protein q-value threshold
 #' @param gg.qv Gene group q-value threshold
 #' @param quality Quantity quality threshold
+#' @param PEP Posterior error probability threshold
 #' @param only_proteotypic If TRUE, will only keep proteotypic
 #' @param get_pep logical; get peptide count ?
 #' @param only_pepall logical; should only keep peptide counts all or also peptide counts for each fractions ?
@@ -33,8 +34,8 @@
 report_process <- function(data, header.id = "Protein.Group", sample.id = "File.Name",
                            quantity.id = "Precursor.Normalised", secondary.id = "Precursor.Id",
                            id_to_add = c("Protein.Names", "First.Protein.Description", "Genes"),
-                           qv = 0.01, pg.qv = 0.01, p.qv = 1, gg.qv = 1, quality = 0.8, only_proteotypic = TRUE,
-                           get_pep = TRUE, only_pepall = FALSE, get_Top3 = FALSE, get_iBAQ = FALSE,
+                           qv = 0.01, pg.qv = 0.01, p.qv = 1, gg.qv = 1, quality = 0.8, PEP = 0.05,
+                           only_proteotypic = TRUE, get_pep = TRUE, only_pepall = FALSE, get_Top3 = FALSE, get_iBAQ = FALSE,
                            fasta = NULL, species = NULL, peptide_length = c(5,36),
                            format = c("xlsx", "csv", "txt")){
 
@@ -82,6 +83,11 @@ report_process <- function(data, header.id = "Protein.Group", sample.id = "File.
       report <- report[which(report[["Quantity.Quality"]] >= quality),]
     }
 
+    ### Filtering on Posterior Error Probability
+    if("PEP" %in% colnames(report)){
+      report <- report[which(report[["PEP"]] <= PEP),]
+    }
+
     ### iq process
 
     #preprocess the data in order to use MaxLFQ (see documentation from iq : https://cran.r-project.org/web/packages/iq/index.html  --> see the vignettes)
@@ -97,7 +103,7 @@ report_process <- function(data, header.id = "Protein.Group", sample.id = "File.
     iq_report <- diann_matrix(report, sample.header = sample.id,
                               id.header = header.id,
                               proteotypic.only = only_proteotypic,
-                              q = qv, quality = quality,
+                              q = qv, quality = quality, PEP = PEP,
                               protein.q = p.qv,
                               pg.q = pg.qv,
                               gg.q = gg.qv,
@@ -210,6 +216,7 @@ report_process <- function(data, header.id = "Protein.Group", sample.id = "File.
                          id.header = "Protein.Group",
                          quantity.header = "Precursor.Quantity",
                          proteotypic.only = only_proteotypic,
+                         quality = quality, PEP = PEP,
                          q = qv, protein.q = p.qv,
                          pg.q = pg.qv, gg.q = gg.qv,
                          method = "sum")

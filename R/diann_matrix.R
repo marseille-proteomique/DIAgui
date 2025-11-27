@@ -14,6 +14,7 @@
 #' @param pg.q Protein group q-value threshold
 #' @param gg.q Gene group q-value threshold
 #' @param quality Quantity quality threshold
+#' @param PEP Posterior error probability threshold
 #' @param get_pep logical; get peptide count?
 #' @param only_pepall logical; should only keep peptide counts all or also
 #'   peptide counts for each fractions?
@@ -31,7 +32,7 @@
 diann_matrix <- function (x, sample.header = "File.Name",
                           id.header = "Precursor.Id", quantity.header = "Precursor.Normalised",
                           proteotypic.only = FALSE, q = 0.01, protein.q = 1, pg.q = 0.01, gg.q = 1,
-                          quality = 0.8, get_pep = FALSE, only_pepall = FALSE, margin = -10, Top3 = FALSE,
+                          quality = 0.8, PEP = 0.05, get_pep = FALSE, only_pepall = FALSE, margin = -10, Top3 = FALSE,
                           method = c("max", "sum")){
   df <- data.table::as.data.table(x)
   if(proteotypic.only){
@@ -43,6 +44,9 @@ diann_matrix <- function (x, sample.header = "File.Name",
 
   if("Quantity.Quality" %in% colnames(df)){
     dft <- dft[which(dft[["Quantity.Quality"]] >= quality),]
+  }
+  if("PEP" %in% colnames(df)){
+    dft <- dft[which(dft[["PEP"]] <= PEP),]
   }
 
   if(nrow(dft) == 0){
