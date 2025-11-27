@@ -45,9 +45,12 @@ ui <- fluidPage(
                sidebarPanel(
                  conditionalPanel(condition = "input.tab1 != 'Import your data' & output.reportdata_up",
                                   HTML("<p><h3>General info</h3><br>
-                                           All quantities are based on the column named 'Precursor.Normalized' from the report file.<br>
-                                           Each threshold you can select correspond to a q-value (look in the report your imported).
-                                           If you set a value to 1, it will not apply any filter according to this value.<br>
+                                           All quantities except the iBAQ are based on the column named 'Precursor.Normalized' from the report file.<br>
+                                           The iBAQ is based on the raw quantities from the columns 'Precursor.Quantity' from the report file.<br>
+                                           Each threshold you can select correspond to a probability (look in the report you imported).
+                                           If you set a value to 1, it will not apply any filter according to this value with the exception of the quality
+                                           threshold based on the 'Quantity.Quality' column where 1 means the best quality; so to no apply any filter on this value,
+                                           set it to 0.<br>
                                            All generated files can be saved in txt, csv or xlsx format.
                                         <p><h3>The MaxLFQ algorithm</h3><br>
                                                This algorithm is another way to determine intensity and to normalize data
@@ -164,7 +167,8 @@ ui <- fluidPage(
                                                                              ),
                                                                     fluidRow(column(3, numericInput("quality_prec", "Select the minimum quantity quality to filter the precursors",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.8)),
-                                                                             column(3, checkboxInput("protypiconly_prec", "Proteotypic only", TRUE)),
+                                                                             column(3, numericInput("PEP_prec", "Select the posterior error probability (PEP) to filter the precursors",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.05)),
                                                                              column(3, radioButtons("remmodif_prec", "",
                                                                                                     choices = c("Only keep modification selected" = "keep",
                                                                                                                 "Remove modifications selected" = "rem")
@@ -172,7 +176,9 @@ ui <- fluidPage(
                                                                                     ),
                                                                              column(3, selectInput("modif_prec", "Select some modifications (if NULL, no filtering)",
                                                                                                    choices = "",
-                                                                                                   multiple = TRUE))
+                                                                                                   multiple = TRUE),
+                                                                                    checkboxInput("protypiconly_prec", "Proteotypic only", TRUE)
+                                                                                    )
                                                                              ),
                                                                     actionButton("go_prec", "Start calculation", class = "btn-primary"),
                                                                     tags$hr(),
@@ -203,11 +209,13 @@ ui <- fluidPage(
                                                                              ),
                                                                     fluidRow(column(3, numericInput("quality_pep", "Select the minimum quantity quality to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.8)),
-                                                                             column(3, checkboxInput("protypiconly_pep", "Proteotypic only", TRUE)),
+                                                                             column(3, numericInput("PEP_pep", "Select the posterior error probability (PEP) to filter the peptides",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.05)),
                                                                              column(3, selectInput("centercol_pep", "Choose the identifier to quantify",
                                                                                                    choices = c("Modified.Sequence", "Stripped.Sequence"),
                                                                                                    selected = "Stripped.Sequence")),
-                                                                             column(3, checkboxInput("getPTM_pep", "Extract best PTM.Q.value", FALSE))
+                                                                             column(3, checkboxInput("getPTM_pep", "Extract best PTM.Q.value", FALSE),
+                                                                                    checkboxInput("protypiconly_pep", "Proteotypic only", TRUE))
                                                                              ),
                                                                     fluidRow(column(3, radioButtons("remmodif_pep", "",
                                                                                                     choices = c("Only keep modification selected" = "keep",
@@ -250,11 +258,13 @@ ui <- fluidPage(
                                                                                  inline = TRUE),
                                                                     fluidRow(column(3, numericInput("quality_peplfq", "Select the minimum quantity quality to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.8)),
-                                                                             column(3, checkboxInput("protypiconly_peplfq", "Proteotypic only", TRUE)),
+                                                                             column(3, numericInput("PEP_peplfq", "Select the posterior error probability (PEP) to filter the peptides",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.05)),
                                                                              column(3, selectInput("centercol_peplfq", "Choose the identifier to quantify",
                                                                                                    choices = c("Modified.Sequence", "Stripped.Sequence"),
                                                                                                    selected = "Modified.Sequence")),
-                                                                             column(3, checkboxInput("getPTM_peplfq", "Extract best PTM.Q.value", FALSE))
+                                                                             column(3, checkboxInput("getPTM_peplfq", "Extract best PTM.Q.value", FALSE),
+                                                                                    checkboxInput("protypiconly_peplfq", "Proteotypic only", TRUE))
                                                                              ),
                                                                     fluidRow(column(3, radioButtons("remmodif_peplfq", "",
                                                                                                     choices = c("Only keep modification selected" = "keep",
@@ -301,7 +311,9 @@ ui <- fluidPage(
                                                                                                     min = 0, max = 1, step = 0.01, value = 1))
                                                                              ),
                                                                     fluidRow(column(3, numericInput("quality_pg", "Select the minimum quantity quality to filter the proteins",
-                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8))
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.8)),
+                                                                             column(3, numericInput("PEP_pg", "Select the posterior error probability (PEP) to filter the proteins",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.05))
                                                                              ),
                                                                     radioButtons("wLFQ_pg", "",
                                                                                  choices = c("Use fast MaxLFQ from iq package (log2 transformed)" = "iq",
@@ -367,8 +379,10 @@ ui <- fluidPage(
                                                                              ),
                                                                     fluidRow(column(3, numericInput("quality_gg", "Select the minimum quantity quality to filter the genes",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.8)),
-                                                                             column(3, checkboxInput("onlycountall_gg", "Only keep peptides counts all", TRUE)),
-                                                                             column(3, checkboxInput("protypiconly_gg", "Proteotypic only", TRUE)),
+                                                                             column(3, numericInput("PEP_gg", "Select the posterior error probability (PEP) to filter the genes",
+                                                                                                    min = 0, max = 1, step = 0.01, value = 0.05)),
+                                                                             column(3, checkboxInput("protypiconly_gg", "Proteotypic only", TRUE),
+                                                                                    checkboxInput("onlycountall_gg", "Only keep peptides counts all", TRUE)),
                                                                              column(3, checkboxInput("Top3_gg", "Get Top3 quantification", TRUE))
                                                                              ),
                                                                     fluidRow(column(3, selectInput("modif_gg", "Select some modifications to remove (if none selected, no filtering)",
@@ -1025,7 +1039,8 @@ server <- function(input, output, session){
                           "Protein.Q.Value" = "The protein q-value",
                           "PG.Q.Value" = "The protein group q-value",
                           "GG.Q.Value"= "The gene group q-value",
-                          "Quantity.Quality" = "The quality of the quantification")
+                          "Quantity.Quality" = "The quality of the quantification",
+                          "PEP" = "The posterior error probability for the precursor")
       needed <- names(needed_info)
       if(all(needed %in% cn)){
         reportdata_chek$x <- NULL
@@ -1047,11 +1062,18 @@ server <- function(input, output, session){
           needed_info <- needed_info[needed]
 
           if("Quantity.Quality" %in% needed){
-            needed_err <- needed[-which(needed == "Quantity.Quality")]
+            needed_err <- needed_err[-which(needed_err == "Quantity.Quality")]
+            needed_war <- paste0(needed_war,
+                                 "<span style='color:orange;'>",
+                                 "The column Quantity.Quality is missing in your report. The filter on quality will hence not be available",
+                                 "</span><br><br>")
           }
-          else{
-            needed_war <- paste0("<span style='color:orange;'>",
-                                 "The column Quantity.Quality is missing in your report. The filter on quality will hence not be applied.",
+
+          if("PEP" %in% needed){
+            needed_err <- needed_err[-which(needed_err == "PEP")]
+            needed_war <- paste0(needed_war,
+                                 "<span style='color:orange;'>",
+                                 "The column PEP is missing in your report. The filter on PEP will hence not be available",
                                  "</span><br><br>")
           }
 
@@ -1071,6 +1093,10 @@ server <- function(input, output, session){
             return(FALSE)
           }
           else{
+            needed_info <- t(data.frame(needed_info))
+            colnames(needed_info) <- "description"
+            needed_info <- as.data.frame(needed_info)
+            reportdata_chek$t <- needed_info
             reportdata_chek$x <- needed_war
             return(TRUE)
           }
@@ -1154,11 +1180,11 @@ server <- function(input, output, session){
     }
 
     if(length(fr)){
-      m <- matrix("", nrow = length(fr), ncol = 1)
-      rownames(m) <- fr
-      colnames(m) <- "New_names"
+      m <- matrix(c(fr, rep("", length(fr))), nrow = length(fr), ncol = 2,
+                  dimnames = list(c(), c("Current_names", "New_names"))
+                  )
       matrixInput("newfrac_dat", "Type new names for your fractions",
-                  m)
+                  m, rows = list(names = FALSE))
     }
     else{
       NULL
@@ -1351,7 +1377,7 @@ server <- function(input, output, session){
                         protein.q = input$qvprot_prec,
                         pg.q = input$qvpg_prec,
                         gg.q = input$qvgg_prec,
-                        quality = input$quality_prec,
+                        quality = input$quality_prec, PEP = input$PEP_prec,
                         method = "max")
 
       if(is.null(d)){
@@ -1443,7 +1469,7 @@ server <- function(input, output, session){
                         protein.q = input$qvprot_pep,
                         pg.q = input$qvpg_pep,
                         gg.q = input$qvgg_pep,
-                        quality = input$quality_pep,
+                        quality = input$quality_pep, PEP = input$PEP_pep,
                         method = "max")
       if(is.null(d)){
         message("<span style='color:red;'>The filters you selected returned an empty data.frame. Try to be less stringent.</span>")
@@ -1588,6 +1614,14 @@ server <- function(input, output, session){
       }
       if(nrow(df) == 0){
         message("<span style='color:red;'>The quantity quality filtering returned an empty data.frame. Try decreasing the minimum quality.</span>")
+        return()
+      }
+
+      if("PEP" %in% colnames(df)){
+        df <- df[which(df$PEP <= input$PEP_peplfq),]
+      }
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The PEP filtering returned an empty data.frame. Try increasing the posterior error probability.</span>")
         return()
       }
 
@@ -1807,6 +1841,13 @@ server <- function(input, output, session){
         message("<span style='color:red;'>The quantity quality filtering returned an empty data.frame. Try decreasing the minimum quality.</span>")
         return()
       }
+      if("PEP" %in% colnames(df)){
+        df <- df[which(df$PEP <= input$PEP_pg),]
+      }
+      if(nrow(df) == 0){
+        message("<span style='color:red;'>The PEP filtering returned an empty data.frame. Try increasing the posterior error probability.</span>")
+        return()
+      }
 
       smpl_header <- ifelse("Run" %in% colnames(df), "Run", "File.Name")
       n_cond <- length(unique(df[[smpl_header]]))
@@ -1930,7 +1971,7 @@ server <- function(input, output, session){
                              proteotypic.only = input$protypiconly_pg,
                              q = input$qv_pg, protein.q = input$qvprot_pg,
                              pg.q = input$qvpg_pg, gg.q = input$qvgg_pg,
-                             quality = input$quality_pg,
+                             quality = input$quality_pg, PEP = input$PEP_pg,
                              method = "sum")
         brut$Genes <- NULL
         brut$Protein.Names <- NULL
@@ -2024,7 +2065,7 @@ server <- function(input, output, session){
                    protein.q = input$qvprot_gg,
                    pg.q = input$qvpg_gg,
                    gg.q = input$qvgg_gg,
-                   quality = input$quality_gg,
+                   quality = input$quality_gg, PEP = input$PEP_gg,
                    get_pep = TRUE, only_pepall = input$onlycountall_gg,
                    Top3 = input$Top3_gg,
                    method = "max")
