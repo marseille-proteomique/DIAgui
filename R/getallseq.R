@@ -43,12 +43,23 @@ getallseq <- function(spec = "Saccharomyces cerevisiae",
       }
       fasta_base <- do.call(c, fasta_base)
     }
-    names(fasta_base) <- unlist(lapply(stringr::str_split(names(fasta_base), "\\|"), function(x) x[2]))
+    names(fasta_base) <- unlist(lapply(stringr::str_split(names(fasta_base), "\\|"),
+                                       function(x){
+                                         if(length(x) != 1){# FASTA from UniprotKB or other
+                                           if(nchar(x[1]) == 2){ # FASTA from UniprotKB
+                                             x <- x[2]
+                                           }
+                                           else{ # FASTA from other like ENSMBL
+                                             x <- x[1]
+                                           }
+                                         }; # else FASTA frmom Uniref, Uniparc or other
+                                         x
+                                       }))
 
     for(i in pr_id){
       pr <- i
-      if(stringr::str_detect(pr, "\\;")){
-        pr <- stringr::str_split(pr, "\\;")[[1]][1]  #take only the first protein if grouped
+      if(grepl(";", pr)){
+        pr <- strsplit(pr, ";")[[1]][1]  #take only the first protein if grouped
         seq_res[[i]] <- fasta_base[[pr]][1]
       }
       else{
@@ -56,7 +67,7 @@ getallseq <- function(spec = "Saccharomyces cerevisiae",
       }
 
       if(verbose){
-        message(paste0(pr, "; ", ni, "/", n))
+        message(paste0(pr, ": ", ni, "/", n))
       }
       ni = ni + 1
     }
@@ -66,8 +77,8 @@ getallseq <- function(spec = "Saccharomyces cerevisiae",
 
     for(i in pr_id){
       pr <- i
-      if(stringr::str_detect(pr, "\\;")){
-        pr <- stringr::str_split(pr, "\\;")[[1]] #take only the first protein if grouped
+      if(grepl(";", pr)){
+        pr <- strsplit(pr, ";")[[1]] #take only the first protein if grouped
         get_quer <- TRUE
         k <- 1
         while(get_quer){
@@ -99,7 +110,7 @@ getallseq <- function(spec = "Saccharomyces cerevisiae",
           if (sequ == "NA"){
             mybank <- seqinr::choosebank(bank_name)
           }
-          if(stringr::str_detect(seqinr::getName(search$req[[1]]), "^\\d{1}")){
+          if(grepl("^\\d{1}", seqinr::getName(search$req[[1]]))){
             message("Reopening bank. Last protein name starts with a digit.")
             mybank <- seqinr::choosebank(bank_name)
           }
