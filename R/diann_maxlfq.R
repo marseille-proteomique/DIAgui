@@ -70,20 +70,20 @@ diann_maxlfq <- function (x, sample.header = "File.Name", group.header = "Protei
     all_piv_brut <- list()
   }
   for (i in 1:length(proteins)) {
-    if (is_duplicated) {
-      piv <- cast_aggregate(df[which(df[[group.header]] ==
-                                       proteins[i]), ], sample.header, id.header, quantity.header)
+    if (is_duplicated){
+      piv <- cast_aggregate(df[which(df[[group.header]] == proteins[i]), ],
+                            sample.header, id.header, quantity.header)
       if(Top3){
-        piv_brut <- cast_aggregate(df[which(df[[group.header]] ==
-                                              proteins[i]), ], sample.header, id.header, "Precursor.Quantity")
+        piv_brut <- cast_aggregate(df[which(df[[group.header]] == proteins[i]), ], sample.header,
+                                   id.header, "Precursor.Quantity")
       }
     }
-    else {
-      piv <- cast(df[which(df[[group.header]] == proteins[i]),
-      ], sample.header, id.header, quantity.header)
+    else{
+      piv <- cast(df[which(df[[group.header]] == proteins[i]),],
+                  sample.header, id.header, quantity.header)
       if(Top3){
-        piv_brut <- cast(df[which(df[[group.header]] == proteins[i]),
-        ], sample.header, id.header, "Precursor.Quantity")
+        piv_brut <- cast(df[which(df[[group.header]] == proteins[i]),],
+                         sample.header, id.header, "Precursor.Quantity")
       }
     }
     if (nrow(piv) == 1 | ncol(piv) == 1) {

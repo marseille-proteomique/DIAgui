@@ -34,47 +34,64 @@ diann_matrix <- function (x, sample.header = "File.Name",
                           proteotypic.only = FALSE, q = 0.01, protein.q = 1, pg.q = 0.01, gg.q = 1,
                           quality = 0.8, PEP = 0.05, get_pep = FALSE, only_pepall = FALSE, margin = -10, Top3 = FALSE,
                           method = c("max", "sum")){
-  df <- data.table::as.data.table(x)
-  if(proteotypic.only){
-    df <- df[which(df[["Proteotypic"]] != 0), ]
-  }
-  dft <- df[which(df[[id.header]] != "" & df[["Q.Value"]] <= q & df[["Protein.Q.Value"]] <=
-                    protein.q & df[["PG.Q.Value"]] <= pg.q & df[["GG.Q.Value"]] <=
-                    gg.q),]
+  method <- match.arg(method)
 
-  if("Quantity.Quality" %in% colnames(df)){
-    dft <- dft[which(dft[["Quantity.Quality"]] >= quality),]
-  }
-  if("PEP" %in% colnames(df)){
+  # convert and remove rows without ids
+  df <- data.table::as.data.table(x)
+  df <- df[ df[[id.header]] != "" , ]
+
+  # filter
+  if(proteotypic.only)
+    df <- df[which(df[["Proteotypic"]] != 0), ]
+
+  dft <- df[which(df[["Q.Value"]] <= q & df[["Protein.Q.Value"]] <= protein.q &
+                    df[["PG.Q.Value"]] <= pg.q & df[["GG.Q.Value"]] <= gg.q),]
+
+  if("Quantity.Quality" %in% colnames(dft))
+    dft <- dft[which(dft[["Quantity.Quality"]] >= quality,)]
+  if("PEP" %in% colnames(dft))
     dft <- dft[which(dft[["PEP"]] <= PEP),]
-  }
+
 
   if(nrow(dft) == 0){
     message("The filters you selected returned an empty data.frame. Try to be less stringent.")
-    return()
+    return(NULL)
   }
 
+  ## Aggregate ----
+  # identify useful information
   info <- c()
-  if(id.header == "Precursor.Id" | id.header == "Stripped.Sequence" | id.header == "Modified.Sequence"){
+  if(id.header == "Precursor.Id"){
     info <- c("Stripped.Sequence", "Modified.Sequence")
   }
+  if(id.header == "Modified.Sequence"){
+    info <- c("Stripped.Sequence")
+  }
+  # no precursor information is kept when id.header == "Stripped.Sequence"
+  # add protein and gene information
+
   info <- c(info, "Protein.Group", "Protein.Names", "Genes")
-  info <- info[!(info %in% id.header)]
-  dft$add_info <- apply(as.data.frame(dft)[,info], 1, function(x) paste(x, collapse = " "))
+  # remove the key aka id.header from kept information
+  info <- setdiff(info, id.header)
+  # combine all information in as a single field
+  dft$add_info <- apply(as.data.frame(dft)[,info], 1, function(x) paste(x, collapse = "\t"))
+  # build the dataset of useful information and check for duplication
 
   df <- unique(dft[, c(sample.header, id.header, quantity.header, "add_info"), with = FALSE]) # should remove unique since it will be handled
   is_duplicated = any(duplicated(paste0(df[[sample.header]],
                                         ":", df[[id.header]])))
   if (is_duplicated) {
-    warning("Multiple quantities per id: the maximum of these will be calculated")
+    warning("Multiple quantities per id: the ", method, " of these will be calculated")
     out <- pivot_aggregate(df, sample.header, id.header, quantity.header, method = method)
-    out <- tidyr::separate(out, add_info, into = info, sep = " ")
+    out <- tidyr::separate(out, add_info, into = info, sep = "\t")
   }
   else {
     out <- pivot(df, sample.header, id.header, quantity.header)
-    out <- tidyr::separate(out, add_info, into = info, sep = " ")
+    out <- tidyr::separate(out, add_info, into = info, sep = "\t")
   }
   dft$add_info <- NULL
+
+  ## Top3
   if(Top3 & id.header == "Genes"){
     x <- unique(dft[which(dft[["Genes"]] != ""), c(sample.header,
                                                    "Genes", "Precursor.Id", "Precursor.Quantity"), with = FALSE])
@@ -131,6 +148,8 @@ diann_matrix <- function (x, sample.header = "File.Name",
 
     out <- merge(out, top3_res, by=id.header)
   }
+
+  ## Number of peptides
   if(get_pep){
     x <- dft[,c(sample.header, id.header, "Genes.MaxLFQ.Unique", "Precursor.Id"), with = FALSE]
     pep <- as.data.frame(matrix(0, nrow = nrow(out), ncol = 2 + length(unique(x[[sample.header]]))))
