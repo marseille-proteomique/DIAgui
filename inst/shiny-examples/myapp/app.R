@@ -197,6 +197,13 @@ ui <- fluidPage(
                                                        fluidRow(box(title = "Peptides", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                     tags$u(h3("Get your peptide file")),
                                                                     tags$hr(),
+                                                                    HTML("<p>In this section, after precursor filtering based on different metrics (q.values, PEP, etc.),
+                                                                         the peptides will be summarized by their maximum intensity (Precursor.Normalized). If you choose to
+                                                                         summarize the peptide by 'Modified.Sequence', then only the corresponding maximum precursor intensity
+                                                                         will be kept by modified sequence. However, if you choose to summarize the peptide by 'Stripped.Sequence'
+                                                                         then only the corresponding maximum precursor intensity coming from the corresponding modified sequence
+                                                                         or not will be kept. If one wants to study phosphorylated peptides for example, 'Modified.Sequence' should be selected.</p>"),
+                                                                    tags$hr(),
 
                                                                     fluidRow(column(3, numericInput("qv_pep", "Select the q-value to filter the peptides",
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.01)),
@@ -213,7 +220,7 @@ ui <- fluidPage(
                                                                                                     min = 0, max = 1, step = 0.01, value = 0.05)),
                                                                              column(3, selectInput("centercol_pep", "Choose the identifier to quantify",
                                                                                                    choices = c("Modified.Sequence", "Stripped.Sequence"),
-                                                                                                   selected = "Stripped.Sequence")),
+                                                                                                   selected = "Modified.Sequence")),
                                                                              column(3, checkboxInput("getPTM_pep", "Extract best PTM.Q.value", FALSE),
                                                                                     checkboxInput("protypiconly_pep", "Proteotypic only", TRUE))
                                                                              ),
@@ -240,6 +247,12 @@ ui <- fluidPage(
                                                                                      ),
 
                                                                     tags$u(h3("Get your peptide file using the MaxLFQ algorithm")),
+                                                                    tags$hr(),
+                                                                    HTML("<p>In this section, after precursor filtering based on different metrics (q.values, PEP, etc.),
+                                                                         the peptides will be summarized by applying the MaxLFQ algorithm on the 'Precursor.Normalized' intensity. If you choose to
+                                                                         summarize the peptide by 'Modified.Sequence', then each line will correspond to a modified sequence.
+                                                                         However, if you choose to summarize the peptide by 'Stripped.Sequence', the modifications information
+                                                                         will be lost. If one wants to study phosphorylated peptides for example, 'Modified.Sequence' should be selected.</p>"),
                                                                     tags$hr(),
 
                                                                     fluidRow(column(3, numericInput("qv_peplfq", "Select the q-value to filter the peptides",
@@ -1648,10 +1661,15 @@ server <- function(input, output, session){
       nc <- ncol(d)
       d <- d[order(rownames(d)), , drop = FALSE]
 
+      ### merge protein/gene information
       df <- df[(df[[input$centercol_peplfq]] %in% rownames(d)),]
       df <- df[order(df[[input$centercol_peplfq]]),]
-      m <- df[,c("Modified.Sequence", "Stripped.Sequence", "Protein.Group", "Protein.Names", "Genes")]
+      m_column <- c("Modified.Sequence", "Stripped.Sequence", "Protein.Group", "Protein.Names", "Genes")
+      if(input$centercol_peplfq == "Stripped.Sequence")
+        m_column <- m_column[-1]
+      m <- df[,m_column]
       m <- unique(m)
+
       if(any(duplicated(m[[input$centercol_peplfq]]))){ # can still have duplicated if grouping is different
         dup_ids <- m[[input$centercol_peplfq]][which(duplicated(m[[input$centercol_peplfq]]))]
         showNotification(paste(length(dup_ids), input$centercol_peplfq,
@@ -1673,8 +1691,9 @@ server <- function(input, output, session){
 
           m <- as.data.frame(rbind(m, m_))
         }
+
+        m <- m[order(m[[input$centercol_peplfq]]),]
       }
-      m <- m[order(m[[input$centercol_peplfq]]),]
 
       if(nrow(m) != nrow(d)){
         d <- NULL
@@ -1688,7 +1707,10 @@ server <- function(input, output, session){
         d <- d[,c((nc+1):ncol(d), 1:nc)]
 
         if(input$getPTM_peplfq){
-          if(all(c("Peptidoform.Q.Value", "Global.Peptidoform.Q.Value", "Lib.Peptidoform.Q.Value",
+          if(input$centercol_peplfq == "Stripped.Sequence"){
+            showNotification("Select 'Modified.Sequence' as the primary id to extract PTM q.values !", type = "warning", duration = 5)
+          }
+          else if(all(c("Peptidoform.Q.Value", "Global.Peptidoform.Q.Value", "Lib.Peptidoform.Q.Value",
                    "PTM.Q.Value", "PTM.Site.Confidence","Lib.PTM.Site.Confidence") %in% colnames(df))){
             ptm <- df[,c(colnames(d)[1:5],
                          "Peptidoform.Q.Value", "Global.Peptidoform.Q.Value", "Lib.Peptidoform.Q.Value",
