@@ -2,6 +2,7 @@
 % Please edit documentation in R/DIAgui.R
 \docType{package}
 \name{DIAgui}
+\alias{DIAgui-package}
 \alias{DIAgui}
 \title{DIAgui package}
 \description{

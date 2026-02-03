@@ -6,6 +6,7 @@
 \usage{
 diann_matrix(
   x,
+  sample.header = "File.Name",
   id.header = "Precursor.Id",
   quantity.header = "Precursor.Normalised",
   proteotypic.only = FALSE,
@@ -13,6 +14,8 @@ diann_matrix(
   protein.q = 1,
   pg.q = 0.01,
   gg.q = 1,
+  quality = 0.8,
+  PEP = 0.05,
   get_pep = FALSE,
   only_pepall = FALSE,
   margin = -10,
@@ -22,6 +25,8 @@ diann_matrix(
 }
 \arguments{
 \item{x}{data, output from diann_load}
+
+\item{sample.header}{Sample id column name}
 
 \item{id.header}{Id column name (protein, gene, ...)}
 
@@ -37,6 +42,10 @@ respective proteins should be considered?}
 \item{pg.q}{Protein group q-value threshold}
 
 \item{gg.q}{Gene group q-value threshold}
+
+\item{quality}{Quantity quality threshold}
+
+\item{PEP}{Posterior error probability threshold}
 
 \item{get_pep}{logical; get peptide count?}
 

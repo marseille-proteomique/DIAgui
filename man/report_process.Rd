@@ -15,6 +15,8 @@ report_process(
   pg.qv = 0.01,
   p.qv = 1,
   gg.qv = 1,
+  quality = 0.8,
+  PEP = 0.05,
   only_proteotypic = TRUE,
   get_pep = TRUE,
   only_pepall = FALSE,
@@ -46,6 +48,10 @@ report_process(
 \item{p.qv}{Uniquely identified protein q-value threshold}
 
 \item{gg.qv}{Gene group q-value threshold}
+
+\item{quality}{Quantity quality threshold}
+
+\item{PEP}{Posterior error probability threshold}
 
 \item{only_proteotypic}{If TRUE, will only keep proteotypic}
 
