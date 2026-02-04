@@ -38,7 +38,7 @@ diann_matrix <- function (x, sample.header = "File.Name",
 
   # convert and remove rows without ids
   df <- data.table::as.data.table(x)
-  df <- df[ df[[id.header]] != "" , ]
+  df <- df[which(df[[id.header]] != ""), ]
 
   # filter
   if(proteotypic.only)
@@ -48,7 +48,7 @@ diann_matrix <- function (x, sample.header = "File.Name",
                     df[["PG.Q.Value"]] <= pg.q & df[["GG.Q.Value"]] <= gg.q),]
 
   if("Quantity.Quality" %in% colnames(dft))
-    dft <- dft[which(dft[["Quantity.Quality"]] >= quality,)]
+    dft <- dft[which(dft[["Quantity.Quality"]] >= quality),]
   if("PEP" %in% colnames(dft))
     dft <- dft[which(dft[["PEP"]] <= PEP),]
 
@@ -218,6 +218,7 @@ pivot <- function (df, sample.header, id.header, quantity.header){
 
   return(piv)
 }
+
 
 
 
