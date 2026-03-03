@@ -12,6 +12,7 @@ volcanoDIA(
   transformation = c("none", "log2"),
   tit = "",
   FDR = 0.01,
+  fixed_FC_cut = TRUE,
   FC_cut = 2.5,
   curvature = 0.1,
   save_file = FALSE
@@ -32,6 +33,10 @@ If NULL, will check for the column named 'id' or the rownames.}
 \item{tit}{Title of your plot}
 
 \item{FDR}{The FDR for the volcano plot}
+
+\item{fixed_FC_cut}{Should the fold-change cutoff be used as inputed or recalculated based on
+the median fold-change of the individuals with a p-value lower than the median p-value.
+Default is TRUE.}
 
 \item{FC_cut}{The fold-change cutoff}
 

@@ -13,9 +13,9 @@ get_bestwind(
 )
 }
 \arguments{
-\item{data}{The report-lib data from DIA-nn which contains the \emph{PrecursorMz} column.
+\item{data}{The report or the report-lib data from DIA-nn which contains the \emph{Precursor.Mz} column.
 It can be a path to the file or the dataframe corresponding to the file
-(need to have \emph{FileName} and \emph{PrecursorMz} columns in that case).}
+(need to have \emph{Precursor.Mz} columns in that case).}
 
 \item{n_window}{The number of windows you want to have.}
 
@@ -28,8 +28,8 @@ Else, it will select the best window for each fraction and then do the mean of t
 windows of same size.}
 }
 \value{
-A list containing a data frame with \emph{FileName}, \emph{PrecursorMz} and a \emph{bins} column;
-        four plots corresponding to bar plots / histogramm from the distribution of the \emph{PrecursorMz}
+A list containing a data frame with \emph{Run}, \emph{Precursor.Mz} and a \emph{bins} column;
+        four plots corresponding to bar plots / histogramm from the distribution of the \emph{Precursor.Mz}
         with and without the window selection.
 }
 \description{
