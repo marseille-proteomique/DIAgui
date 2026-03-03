@@ -821,7 +821,12 @@ ui <- fluidPage(
                                                                                                                                                                                )
                                                                                                                                                               ),
                                                                                                                                                      fluidRow(column(3, numericInput("fdr_volcano", "Select an FDR", min = 0, max = 1, value = 0.01, step = 0.01)),
-                                                                                                                                                              column(3, numericInput("fccut_volcano", "Select a fold change cutoff", min = 0, value = 2.5, step = 0.1)),
+                                                                                                                                                              column(3, numericInput("fccut_volcano", "Select a fold change cutoff", min = 0, value = 2.5, step = 0.1),
+                                                                                                                                                                     radioButtons("fccut_choice_volcano", "",
+                                                                                                                                                                                  choices = c("Recompute fold change cutoff based on median fold-change of the individual with a p-value below the median p-value" = FALSE,
+                                                                                                                                                                                              "Keep fold change cutoff as is" = TRUE),
+                                                                                                                                                                                  selected = TRUE, inline = FALSE)
+                                                                                                                                                                     ),
                                                                                                                                                               column(3, textInput("tit_volcano", "Choose a title for your plot (can be NULL)")),
                                                                                                                                                               column(3, checkboxInput("savef_volcano", "Save results files", TRUE))
                                                                                                                                                               ),
@@ -853,7 +858,7 @@ ui <- fluidPage(
                                                   tabPanel("Check other reports",
                                                            fluidRow(box(title = "Window selection", status = "primary", solidHeader = TRUE, collapsible = TRUE, width = 12,
                                                                         shiny::HTML("<h5>In this tab, you'll need to upload the report-lib file from DIA-NN outputs.
-                                                                                    It needs to contain the columns named 'FileName' and 'PrecursorMz'.<br>
+                                                                                    It needs to contain the columns named 'Precursor.Mz'.<br>
                                                                                     The goal is to get the best m/z windows for DIA according a number
                                                                                     of window based on the report-lib data.
                                                                                     </h5>"),
@@ -2936,7 +2941,8 @@ server <- function(input, output, session){
       }
       volcanoDIA(visu_data(), control = input$ctrl_volcano, treated = input$treated_volcano,
                  transformation = input$transfo_volcano, tit = input$tit_volcano,
-                 FDR = input$fdr_volcano, FC_cut = input$fccut_volcano,
+                 FDR = input$fdr_volcano,
+                 fixed_FC_cut = input$fccut_choice_volcano, FC_cut = input$fccut_volcano,
                  save_file = input$savef_volcano, id = nm)
     })
     observeEvent(input$seevolcano_stat, {
@@ -3022,11 +3028,11 @@ server <- function(input, output, session){
 
       showNotification("Getting your data, this may take a while.", type = "message")
       df <- diann_load(File$datapath)
-      if("FileName" %in% colnames(df) & "ProductMz" %in% colnames(df)){
+      if(any(c("PrecursortMz", "Precursor.Mz") %in% colnames(df))){
         return(df)
       }
       else{
-        showNotification("Your file doesn't contain the needed columns 'FileName' and 'ProductMz' !",
+        showNotification("Your file doesn't contain the needed column 'Precursor.Mz' !",
                          type = "error", duration = 8)
         return(NULL)
       }
