@@ -10,6 +10,9 @@
 #' @param transformation Which transformation do you want to apply (log2 or none)
 #' @param tit Title of your plot
 #' @param FDR The FDR for the volcano plot
+#' @param fixed_FC_cut Should the fold-change cutoff be used as inputed or recalculated based on
+#'   the median fold-change of the individuals with a p-value lower than the median p-value.
+#'   Default is TRUE.
 #' @param FC_cut The fold-change cutoff
 #' @param curvature The curvature used for the curve on the volcano plot
 #' @param save_file Save results file
@@ -20,7 +23,7 @@
 
 volcanoDIA <- function(data, control, treated, id = NULL,
                        transformation = c("none", "log2"), tit = "",
-                       FDR = 0.01, FC_cut = 2.5, curvature = 0.1,
+                       FDR = 0.01, fixed_FC_cut = TRUE, FC_cut = 2.5, curvature = 0.1,
                        save_file = FALSE){
   if(!all(control %in% colnames(data))){
     not_indata <- control[!(control %in% colnames(data))]
@@ -131,14 +134,22 @@ volcanoDIA <- function(data, control, treated, id = NULL,
   volc <- as.data.frame(Reduce(rbind, volc))
 
 
-  cutoff <- volc %>%
-    dplyr::mutate(BH = (order(order(pv))/length(pv))*FDR) %>%
-    dplyr::reframe(pval = find_cutoff(pv, BH),
-                   FC_pos = FC_cut + median(FC[which(pv < quantile(pv, 0.5, na.rm = TRUE))], na.rm = TRUE),
-                   FC_neg = -FC_cut - median(FC[which(pv < quantile(pv, 0.5, na.rm = TRUE))], na.rm = TRUE))
+  if(fixed_FC_cut){
+    cutoff <- volc %>%
+      dplyr::mutate(BH = (order(order(pv))/length(pv))*FDR) %>%
+      dplyr::reframe(pval = find_cutoff(pv, BH),
+                     FC_pos = FC_cut, FC_neg = -FC_cut)
+  }
+  else{
+    cutoff <- volc %>%
+      dplyr::mutate(BH = (order(order(pv))/length(pv))*FDR) %>%
+      dplyr::reframe(pval = find_cutoff(pv, BH),
+                     FC_pos = FC_cut + median(FC[which(pv < quantile(pv, 0.5, na.rm = TRUE))], na.rm = TRUE),
+                     FC_neg = -FC_cut - median(FC[which(pv < quantile(pv, 0.5, na.rm = TRUE))], na.rm = TRUE))
+  }
 
   volc <- volc %>%
-    dplyr::mutate(criteria = pv <= cutoff$pval & (FC >= cutoff$FC_pos | FC <= cutoff$FC_neg),
+    dplyr::mutate(criteria = pv < cutoff$pval & (FC >= cutoff$FC_pos | FC <= cutoff$FC_neg),
                   curve = curve(FC, cutoff$FC_neg,
                                 cutoff$FC_pos,
                                 cutoff$pval,

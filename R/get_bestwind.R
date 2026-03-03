@@ -2,9 +2,9 @@
 #'
 #' Get the best m/z windows for DIA according a number of window and the report-lib from DIA-nn.
 #'
-#' @param data The report-lib data from DIA-nn which contains the \emph{PrecursorMz} column.
+#' @param data The report or the report-lib data from DIA-nn which contains the \emph{Precursor.Mz} column.
 #'             It can be a path to the file or the dataframe corresponding to the file
-#'             (need to have \emph{FileName} and \emph{PrecursorMz} columns in that case).
+#'             (need to have \emph{Precursor.Mz} columns in that case).
 #' @param n_window The number of windows you want to have.
 #' @param per_frac If \code{FALSE}, will select the best windows from all fraction without differentiation.
 #'                 Else, it will select the best window for each fraction and then do the mean of those.
@@ -12,8 +12,8 @@
 #' @param window_size A fix m/z window size. Default is NULL but if numeric, it will compute n
 #'    windows of same size.
 #'
-#' @return A list containing a data frame with \emph{FileName}, \emph{PrecursorMz} and a \emph{bins} column;
-#'         four plots corresponding to bar plots / histogramm from the distribution of the \emph{PrecursorMz}
+#' @return A list containing a data frame with \emph{Run}, \emph{Precursor.Mz} and a \emph{bins} column;
+#'         four plots corresponding to bar plots / histogramm from the distribution of the \emph{Precursor.Mz}
 #'         with and without the window selection.
 #'
 #' @details
@@ -24,44 +24,56 @@
 get_bestwind <- function(data, n_window = 25, per_frac = FALSE,
                          overlap = 0, window_size = NULL){
   if(inherits(data, "character")){
-    if(stringr::str_detect(data, "\\.tsv$"))
+    if(grepl("\\.(tsv|parquet)$",  data))
       data <-  diann_load(data)
     else{
-      message("You need to import the report-lib file output from DIA-nn which is in tsv format.
+      message("You need to import the report-lib file output from DIA-nn which is either in tsv or in parquet format.
               \nThe file you put is in another format; please provide the right file.")
       return()
     }
   }
   data <- as.data.frame(data)
-  data <- data %>% dplyr::select(FileName, PrecursorMz)
+  data <- data[,grep("File(\\.N|N)ame|^Run$|^Precursor(\\.M|M)z$", colnames(data)), drop = FALSE]
+  if(!length(data)){
+    message("Your file needs to contain at least a column named 'Precursor.Mz'")
+    return()
+  }
+  colnames(data)[grep("^Precursor(\\.M|M)z$", colnames(data))] <- "Precursor.Mz"
 
-  orig_hist <- ggplot2::ggplot(data, ggplot2::aes(x=PrecursorMz)) +
+  if(length(grep("File(\\.N|N)ame|^Run$", colnames(data)))){
+    colnames(data)[grep("File(\\.N|N)ame|^Run$", colnames(data))] <- "Run"
+  }
+  else{
+    data$Run <- ""
+  }
+
+  orig_hist <- ggplot2::ggplot(data, ggplot2::aes(x=Precursor.Mz)) +
     ggplot2::geom_histogram(color="black", fill="white", bins = n_window)
-  orig_hist_frac <- ggplot2::ggplot(data, ggplot2::aes(x=PrecursorMz)) +
+  orig_hist_frac <- ggplot2::ggplot(data, ggplot2::aes(x=Precursor.Mz)) +
     ggplot2::geom_histogram(color="black", fill="white", bins = n_window) +
-    ggplot2::facet_wrap(~FileName)
+    ggplot2::facet_wrap(~Run)
 
-  data <- data[order(data$PrecursorMz),]
+  data <- data[order(data$Precursor.Mz),]
 
   if(is.numeric(window_size)){
     window_size <- abs(window_size)
-    low <- floor(min(data$PrecursorMz, na.rm = TRUE))
-    up <- ceiling(max(data$PrecursorMz, na.rm = TRUE))
+    low <- floor(min(data$Precursor.Mz, na.rm = TRUE))
+    up <- ceiling(max(data$Precursor.Mz, na.rm = TRUE))
 
     config <- unique(c(seq(low, up, window_size), up))
     data$bins <- NA
     for(i in 1:(length(config) - 1)){
-      data$bins[which(data$PrecursorMz >= config[i] & data$PrecursorMz < config[i+1])] <- paste0(config[i], "-", config[i+1])
+      data$bins[which(data$Precursor.Mz >= config[i] & data$Precursor.Mz < config[i+1])] <- paste0(config[i], "-", config[i+1])
     }
   }
   else{
     if(per_frac){
       best_wind <- list()
-      frac = unique(data$FileName)
+      frac = unique(data$Run)
       ### first get best windows for each fraction
       for(i in frac){
-        data_bis <- data %>% dplyr::select(FileName, PrecursorMz) %>%
-          dplyr::filter(FileName == i)
+        data_bis <- data %>% dplyr::select(Run, Precursor.Mz) %>%
+          dplyr::filter(Run == i)
 
         n = nrow(data_bis)
         n_average = n/n_window
@@ -102,7 +114,7 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE,
         config <- c(0, cumsum(config))
         un_wind <- list()
         for(k in 1:(length(config) - 1)){
-          wind <- range(data_bis$PrecursorMz[(config[k]+1):config[k+1]], na.rm = TRUE)
+          wind <- range(data_bis$Precursor.Mz[(config[k]+1):config[k+1]], na.rm = TRUE)
           wind[1] <- floor(wind[1])
           wind[2] <- ceiling(wind[2])
           un_wind[[k]] <- wind
@@ -128,7 +140,7 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE,
 
       data$bins <- rep(NA, n)
       for(i in best_wind){ # get the windows --> same amount for each
-        data$bins[which(data$PrecursorMz >= i[1] & data$PrecursorMz < i[2])] <- paste(i, collapse = "-")
+        data$bins[which(data$Precursor.Mz >= i[1] & data$Precursor.Mz < i[2])] <- paste(i, collapse = "-")
       }
     }
     else{
@@ -173,7 +185,7 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE,
 
       un_wind <- list()
       for(i in 1:(length(config) - 1)){
-        wind <- range(data$PrecursorMz[(config[i]+1):config[i+1]], na.rm = TRUE)
+        wind <- range(data$Precursor.Mz[(config[i]+1):config[i+1]], na.rm = TRUE)
         wind[1] <- floor(wind[1])
         wind[2] <- ceiling(wind[2])
         un_wind[[i]] <- wind
@@ -189,7 +201,7 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE,
 
       data$bins <- rep(NA, n)
       for(i in un_wind){ # get the windows --> same amount for each
-        data$bins[which(data$PrecursorMz >= i[1] & data$PrecursorMz < i[2])] <- paste(i, collapse = "-")
+        data$bins[which(data$Precursor.Mz >= i[1] & data$Precursor.Mz < i[2])] <- paste(i, collapse = "-")
       }
     }
   }
@@ -221,7 +233,7 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE,
         bins_overlap <- list()
         for(i in un_wind){
           new_win <- as.numeric(strsplit(i, "-")[[1]])
-          new_data <- data[which(data$PrecursorMz >= new_win[1] & data$PrecursorMz < new_win[2]),]
+          new_data <- data[which(data$Precursor.Mz >= new_win[1] & data$Precursor.Mz < new_win[2]),]
           new_data$bins <- i
           bins_overlap[[i]] <- new_data
         }
@@ -237,7 +249,7 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE,
     ggplot2::labs(x = "bins")
   new_hist_frac <-ggplot2:: ggplot(data, ggplot2::aes(x = factor(bins, levels = un_wind))) +
     ggplot2::geom_bar(stat="count", width=0.7, fill="steelblue") +
-    ggplot2::facet_wrap(~FileName) +
+    ggplot2::facet_wrap(~Run) +
     ggplot2::labs(x = "bins")
 
   res <- list("data" = data, "orig_hist" = orig_hist, "orig_hist_perfrac" = orig_hist_frac,
@@ -245,3 +257,4 @@ get_bestwind <- function(data, n_window = 25, per_frac = FALSE,
 
   return(res)
 }
+
