@@ -1,5 +1,5 @@
 Package: DIAgui
-Version: 1.4.9
+Version: 1.4.10
 Type: Package
 Title: A shiny app for processing DIAnn output in proteomics
 Author: Marc-Antoine GERAULT
@@ -54,6 +54,7 @@ LinkingTo:
     Rcpp,
     RcppEigen
 VignetteBuilder: knitr
+
 
 
 
