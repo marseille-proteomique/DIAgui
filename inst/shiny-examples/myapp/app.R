@@ -917,13 +917,13 @@ ui <- fluidPage(
                )
              ),
 
-    bslib::nav_item(a(href = "mailto:marco.gerault@gmail.com",
-                      icon("envelope"),
-                      title = "Any questions, suggestions or bug report ? Feel free to send me an e-mail !")
+    bslib::nav_item(shiny::a(href = "mailto:marco.gerault@gmail.com",
+                             icon("envelope"),
+                             title = "Any questions, suggestions or bug report ? Feel free to send me an e-mail !")
                     ),
-    bslib::nav_item(a(href = "https://youtu.be/vfvh15Q93eU",
-                      icon("question-circle"),
-                      title = "See the tutorial video")
+    bslib::nav_item(shiny::a(href = "https://youtu.be/vfvh15Q93eU",
+                             icon("question-circle"),
+                             title = "See the tutorial video")
                     )
     )
 )
